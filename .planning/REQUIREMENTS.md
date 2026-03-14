@@ -106,49 +106,49 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| WALL-01 | — | Pending |
-| WALL-02 | — | Pending |
-| WALL-03 | — | Pending |
-| WALL-04 | — | Pending |
-| ONBR-01 | — | Pending |
-| ONBR-02 | — | Pending |
-| ONBR-03 | — | Pending |
-| INTNT-01 | — | Pending |
-| INTNT-02 | — | Pending |
-| AI-01 | — | Pending |
-| AI-02 | — | Pending |
-| AI-03 | — | Pending |
-| AI-04 | — | Pending |
-| AI-05 | — | Pending |
-| EXEC-01 | — | Pending |
-| EXEC-02 | — | Pending |
-| EXEC-03 | — | Pending |
-| EXEC-04 | — | Pending |
-| EXEC-05 | — | Pending |
-| DELEG-01 | — | Pending |
-| DELEG-02 | — | Pending |
-| DELEG-03 | — | Pending |
-| DELEG-04 | — | Pending |
-| DELEG-05 | — | Pending |
-| STRAT-01 | — | Pending |
-| STRAT-02 | — | Pending |
-| STRAT-03 | — | Pending |
-| STRAT-04 | — | Pending |
-| MON-01 | — | Pending |
-| MON-02 | — | Pending |
-| MON-03 | — | Pending |
-| MON-04 | — | Pending |
-| KPI-01 | — | Pending |
-| KPI-02 | — | Pending |
-| KPI-03 | — | Pending |
-| KPI-04 | — | Pending |
-| KPI-05 | — | Pending |
+| WALL-01 | Phase 1 | Pending |
+| WALL-02 | Phase 1 | Pending |
+| WALL-03 | Phase 1 | Pending |
+| WALL-04 | Phase 1 | Pending |
+| ONBR-01 | Phase 2 | Pending |
+| ONBR-02 | Phase 2 | Pending |
+| ONBR-03 | Phase 7 | Pending |
+| INTNT-01 | Phase 2 | Pending |
+| INTNT-02 | Phase 2 | Pending |
+| AI-01 | Phase 3 | Pending |
+| AI-02 | Phase 3 | Pending |
+| AI-03 | Phase 3 | Pending |
+| AI-04 | Phase 3 | Pending |
+| AI-05 | Phase 3 | Pending |
+| EXEC-01 | Phase 4 | Pending |
+| EXEC-02 | Phase 4 | Pending |
+| EXEC-03 | Phase 4 | Pending |
+| EXEC-04 | Phase 4 | Pending |
+| EXEC-05 | Phase 4 | Pending |
+| DELEG-01 | Phase 7 | Pending |
+| DELEG-02 | Phase 7 | Pending |
+| DELEG-03 | Phase 7 | Pending |
+| DELEG-04 | Phase 7 | Pending |
+| DELEG-05 | Phase 7 | Pending |
+| STRAT-01 | Phase 5 | Pending |
+| STRAT-02 | Phase 5 | Pending |
+| STRAT-03 | Phase 5 | Pending |
+| STRAT-04 | Phase 5 | Pending |
+| MON-01 | Phase 6 | Pending |
+| MON-02 | Phase 6 | Pending |
+| MON-03 | Phase 6 | Pending |
+| MON-04 | Phase 6 | Pending |
+| KPI-01 | Phase 8 | Pending |
+| KPI-02 | Phase 8 | Pending |
+| KPI-03 | Phase 8 | Pending |
+| KPI-04 | Phase 8 | Pending |
+| KPI-05 | Phase 8 | Pending |
 
 **Coverage:**
 - v1 requirements: 37 total
-- Mapped to phases: 0
-- Unmapped: 37 ⚠️
+- Mapped to phases: 37
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-14*
-*Last updated: 2026-03-14 after initial definition*
+*Last updated: 2026-03-14 after roadmap creation*
