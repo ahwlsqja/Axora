@@ -5,6 +5,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { Wallet } from '@injectivelabs/wallet-base'
 import { isWalletInstalled, getInstallUrl } from '@/services/injective/wallet'
 import { useWallet } from '@/hooks/useWallet'
+import { useWalletStore } from '@/stores/walletStore'
 
 interface WalletModalProps {
   open: boolean
@@ -32,7 +33,12 @@ export function WalletModal({ open, onOpenChange }: WalletModalProps) {
     }
 
     await connect(walletType)
-    onOpenChange(false)
+    // Only close modal if connection succeeded.
+    // walletStore.connect() swallows errors internally, so check store directly.
+    const { status: currentStatus } = useWalletStore.getState()
+    if (currentStatus === 'connected') {
+      onOpenChange(false)
+    }
   }
 
   return (
