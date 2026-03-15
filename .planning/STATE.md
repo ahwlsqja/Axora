@@ -5,12 +5,12 @@
 See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** 사용자의 의도를 Injective에서 실행 가능한 복합 온체인 액션으로 빠르고 안전하게 바꿔주는 것
-**Current focus:** Phase 1 - Foundation & Wallet
+**Current focus:** Phase 1 - Foundation & Subaccount Onboarding
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation & Wallet)
-Plan: 0 of 2 in current phase
+Phase: 1 of 8 (Foundation & Subaccount Onboarding)
+Plan: 0 of 3 in current phase
 Status: Ready to plan
 Last activity: 2026-03-14 -- Roadmap created
 
@@ -42,9 +42,10 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Roadmap]: 8 phases derived from 37 requirements; spot markets only for MVP
+- [Roadmap]: 8 phases derived from requirements; spot markets only for MVP
 - [Roadmap]: Phases 5, 6, 8 can parallelize after Phase 4 completes
-- [Roadmap]: Phase 7 (Delegation) flagged HIGH research -- recommend /gsd:research-phase before implementation
+- [Architecture]: Subaccount-first — Direct Signing 제거, 첫 세션에서 Subaccount + Delegation 온보딩 (2026-03-15)
+- [Roadmap]: Phase 7 renamed to Grant Lifecycle (갱신/범위 조정/해지)
 
 ### Pending Todos
 
@@ -57,6 +58,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14
-Stopped at: Roadmap creation complete
+Last session: 2026-03-15
+Stopped at: Subaccount-first roadmap restructure + Phase 1 context gathered
 Resume file: None
