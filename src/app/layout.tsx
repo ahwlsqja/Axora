@@ -7,7 +7,7 @@ import { Header } from '@/components/layout/Header'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Injective Agent',
+  title: 'Axora',
   description: 'AI-powered trading agent for Injective Protocol',
 }
 
