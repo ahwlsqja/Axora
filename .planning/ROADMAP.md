@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. Subaccount is created with deposited funds and AuthZ grant (spot markets, within deposited amount, 7-day expiry)
   6. User can disconnect wallet and session state is fully cleared
   7. Application can construct and broadcast transactions via subaccount on Injective testnet
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 01-01: Project scaffold, dev tooling, and Injective chain client
@@ -51,7 +51,7 @@ Plans:
   2. User can select a preset intent card and proceed to the next step
   3. User can type a free-text natural language intent and proceed to the next step
   4. User is prompted to connect wallet only when they attempt to execute, not while browsing intents
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 02-01: Landing page with goal-based intent cards
@@ -67,7 +67,7 @@ Plans:
   3. User can adjust key parameters (price range, amount, split count) on the proposal before proceeding
   4. AI flags or prevents unrealistic parameters based on current market price, volatility, and orderbook depth
   5. AI refuses to structure strategies that exceed user-defined risk thresholds
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 03-01: LLM intent parser with Zod schema validation
@@ -84,7 +84,7 @@ Plans:
   4. System prevents strategies that exceed deposited subaccount balance
   5. System enforces mandatory stop-loss on leveraged positions
   6. Execution respects AuthZ grant boundaries (allowed markets, max capital, expiry)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 04-01: Delegated transaction construction and execution flow
@@ -99,7 +99,7 @@ Plans:
   2. User can execute a scale-in strategy with orders at declining price levels with increasing size
   3. User can execute a bracket order with entry, take-profit, and stop-loss
   4. AI determines optimal order spacing, sizing, and price levels based on user intent and current market conditions
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 05-01: DCA and scale-in strategy types
@@ -114,7 +114,7 @@ Plans:
   2. User can drill into a strategy to see individual order fill status
   3. User can view basic P&L for executed strategies
   4. User can browse their strategy execution history
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 06-01: Active strategy list and order fill status
@@ -130,7 +130,7 @@ Plans:
   3. User can revoke delegation at any time, immediately stopping agent execution
   4. User can view current delegation scope (active permissions, remaining limits, expiry)
   5. System gracefully handles expired grants (notify user, pause execution, prompt renewal)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 07-01: Grant expiry notification and renewal flow
@@ -146,7 +146,7 @@ Plans:
   3. System tracks repeat usage rate (users executing 2+ strategies in 30 days)
   4. System tracks delegated TVL and grant renewal rate
   5. System tracks time-to-first-execution for new users
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 08-01: Event tracking and conversion funnel instrumentation
