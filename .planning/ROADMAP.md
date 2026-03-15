@@ -51,11 +51,11 @@ Plans:
   2. User can select a preset intent card and proceed to the next step
   3. User can type a free-text natural language intent and proceed to the next step
   4. User is prompted to connect wallet only when they attempt to execute, not while browsing intents
-**Plans**: 3 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Landing page with goal-based intent cards
-- [ ] 02-02: Natural language intent input and wallet-gated flow
+- [ ] 02-01-PLAN.md — Intent data model, preset cards, and intent-first landing page restructure
+- [ ] 02-02-PLAN.md — Free-text intent input, confirmation flow, and wallet-gated proceed
 
 ### Phase 3: AI Strategy Engine
 **Goal**: AI converts user intent into a clear, adjustable strategy proposal that users can understand and trust
