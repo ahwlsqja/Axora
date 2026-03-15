@@ -1,8 +1,72 @@
 import { Wallet } from '@injectivelabs/wallet-base'
 import { getInjectiveAddress } from '@injectivelabs/sdk-ts'
 import { getWalletStrategy } from './client'
+import { NETWORK } from '@/utils/constants'
+import { Network } from '@injectivelabs/networks'
 
 const STORAGE_KEY = 'injective-agent-wallet'
+
+/**
+ * Suggest the Injective chain to Keplr if not already registered.
+ * Required for testnet since Keplr doesn't ship with injective-888 by default.
+ */
+async function suggestChainToKeplr(): Promise<void> {
+  const keplr = getKeplr()
+  if (!keplr) return
+
+  const isTestnet = NETWORK === Network.Testnet
+
+  await keplr.experimentalSuggestChain({
+    chainId: isTestnet ? 'injective-888' : 'injective-1',
+    chainName: isTestnet ? 'Injective Testnet' : 'Injective',
+    rpc: isTestnet
+      ? 'https://testnet.sentry.tm.injective.network:443'
+      : 'https://sentry.tm.injective.network:443',
+    rest: isTestnet
+      ? 'https://testnet.sentry.lcd.injective.network:443'
+      : 'https://sentry.lcd.injective.network:443',
+    bip44: { coinType: 60 },
+    bech32Config: {
+      bech32PrefixAccAddr: 'inj',
+      bech32PrefixAccPub: 'injpub',
+      bech32PrefixValAddr: 'injvaloper',
+      bech32PrefixValPub: 'injvaloperpub',
+      bech32PrefixConsAddr: 'injvalcons',
+      bech32PrefixConsPub: 'injvalconspub',
+    },
+    currencies: [
+      { coinDenom: 'INJ', coinMinimalDenom: 'inj', coinDecimals: 18 },
+    ],
+    feeCurrencies: [
+      {
+        coinDenom: 'INJ',
+        coinMinimalDenom: 'inj',
+        coinDecimals: 18,
+        gasPriceStep: {
+          low: 500000000,
+          average: 1000000000,
+          high: 1500000000,
+        },
+      },
+    ],
+    stakeCurrency: {
+      coinDenom: 'INJ',
+      coinMinimalDenom: 'inj',
+      coinDecimals: 18,
+    },
+  })
+}
+
+/**
+ * Get the real Keplr instance, bypassing OKX Wallet's override.
+ * OKX Wallet injects itself as window.keplr to intercept Keplr calls.
+ */
+function getKeplr(): typeof window.keplr | undefined {
+  if (typeof window === 'undefined') return undefined
+  // Keplr extension stores its original reference here
+  return (window as unknown as Record<string, unknown>).keplr_wallet_provider as typeof window.keplr
+    ?? window.keplr
+}
 
 /**
  * Check if a wallet extension is installed in the browser.
@@ -12,7 +76,7 @@ export function isWalletInstalled(walletType: Wallet): boolean {
 
   switch (walletType) {
     case Wallet.Keplr:
-      return !!window.keplr
+      return !!getKeplr()
     case Wallet.Metamask:
       return !!window.ethereum
     default:
@@ -40,6 +104,15 @@ export function getInstallUrl(walletType: Wallet): string {
  * and converts MetaMask ETH addresses to Injective format.
  */
 export async function connectWallet(walletType: Wallet): Promise<string> {
+  // Suggest Injective chain to Keplr before connecting (required for testnet)
+  if (walletType === Wallet.Keplr) {
+    await suggestChainToKeplr()
+    // Enable the chain after suggesting it
+    const chainId = NETWORK === Network.Testnet ? 'injective-888' : 'injective-1'
+    const keplr = getKeplr()
+    if (keplr) await keplr.enable(chainId)
+  }
+
   const strategy = getWalletStrategy()
 
   await strategy.setWallet(walletType)
