@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 1 of 8 (Foundation & Subaccount Onboarding)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: Executing
-Last activity: 2026-03-15 -- Completed 01-01-PLAN.md
+Last activity: 2026-03-16 -- Completed 01-02-PLAN.md
 
-Progress: [█░░░░░░░░░] 4%
+Progress: [██░░░░░░░░] 8%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 14min
-- Total execution time: 0.23 hours
+- Total plans completed: 2
+- Average duration: ~17min
+- Total execution time: 0.57 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation-wallet | 1/3 | 14min | 14min |
+| 01-foundation-wallet | 2/3 | 34min | 17min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (14min)
+- Last 5 plans: 01-01 (14min), 01-02 (20min)
 - Trend: Starting
 
 *Updated after each plan completion*
@@ -49,6 +49,9 @@ Recent decisions affecting current work:
 - [01-01]: MsgBroadcaster lives in @injectivelabs/wallet-core (not sdk-ts)
 - [01-01]: WalletStrategy requires strategies={} param; strategies lazy-load on setWallet()
 - [01-01]: Next.js 16 defaults to Turbopack; needs turbopack config alongside webpack
+- [01-02]: Keplr requires experimentalSuggestChain for injective-888 testnet
+- [01-02]: OKX Wallet overrides window.keplr; use keplr_wallet_provider fallback
+- [01-02]: wallet-ledger CryptoJS AMD issue resolved via empty module alias
 
 ### Pending Todos
 
@@ -61,6 +64,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15
-Stopped at: Completed 01-01-PLAN.md (Project scaffold + Injective client services)
+Last session: 2026-03-16
+Stopped at: Completed 01-02-PLAN.md (Wallet connection + balance display)
 Resume file: None
