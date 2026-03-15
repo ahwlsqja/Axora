@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 1 of 8 (Foundation & Subaccount Onboarding)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-03-14 -- Roadmap created
+Plan: 1 of 3 in current phase
+Status: Executing
+Last activity: 2026-03-15 -- Completed 01-01-PLAN.md
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 4%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 14min
+- Total execution time: 0.23 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-foundation-wallet | 1/3 | 14min | 14min |
 
 **Recent Trend:**
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 01-01 (14min)
+- Trend: Starting
 
 *Updated after each plan completion*
 
@@ -46,6 +46,9 @@ Recent decisions affecting current work:
 - [Roadmap]: Phases 5, 6, 8 can parallelize after Phase 4 completes
 - [Architecture]: Subaccount-first — Direct Signing 제거, 첫 세션에서 Subaccount + Delegation 온보딩 (2026-03-15)
 - [Roadmap]: Phase 7 renamed to Grant Lifecycle (갱신/범위 조정/해지)
+- [01-01]: MsgBroadcaster lives in @injectivelabs/wallet-core (not sdk-ts)
+- [01-01]: WalletStrategy requires strategies={} param; strategies lazy-load on setWallet()
+- [01-01]: Next.js 16 defaults to Turbopack; needs turbopack config alongside webpack
 
 ### Pending Todos
 
@@ -59,5 +62,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-15
-Stopped at: Subaccount-first roadmap restructure + Phase 1 context gathered
+Stopped at: Completed 01-01-PLAN.md (Project scaffold + Injective client services)
 Resume file: None
