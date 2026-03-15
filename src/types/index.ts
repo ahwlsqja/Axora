@@ -7,6 +7,9 @@ export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected'
 /** Onboarding flow steps */
 export type OnboardingStep = 'connect' | 'explain' | 'deposit'
 
+/** Intent source type */
+export type IntentSource = 'preset' | 'freetext'
+
 /** Token balance representation */
 export interface TokenBalance {
   denom: string
