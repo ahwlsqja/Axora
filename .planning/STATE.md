@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** 사용자의 의도를 Injective에서 실행 가능한 복합 온체인 액션으로 빠르고 안전하게 바꿔주는 것
-**Current focus:** Phase 1 - Foundation & Subaccount Onboarding
+**Current focus:** Phase 2 - Intent Entry UX
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation & Subaccount Onboarding)
-Plan: 3 of 3 in current phase
-Status: Complete
-Last activity: 2026-03-16 -- Completed 01-03-PLAN.md
+Phase: 2 of 8 (Intent Entry UX)
+Plan: 1 of 3 in current phase
+Status: In Progress
+Last activity: 2026-03-16 -- Completed 02-01-PLAN.md
 
-Progress: [██████████] 100% (Phase 1)
+Progress: [███░░░░░░░] 33% (Phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: ~20min
-- Total execution time: 1.0 hours
+- Total plans completed: 4
+- Average duration: ~16min
+- Total execution time: 1.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-wallet | 3/3 | 59min | 20min |
+| 02-intent-entry-ux | 1/3 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (14min), 01-02 (20min), 01-03 (25min)
-- Trend: Stable
+- Last 5 plans: 01-01 (14min), 01-02 (20min), 01-03 (25min), 02-01 (4min)
+- Trend: Accelerating
 
 *Updated after each plan completion*
 
@@ -56,6 +57,8 @@ Recent decisions affecting current work:
 - [01-03]: Subaccount balance from indexer is in wei; needs BigInt 10^18 conversion
 - [01-03]: Rainbow Wallet overrides window.ethereum; getMetaMaskProvider() with providers array detection
 - [01-03]: ensureCorrectNetwork must take walletType to avoid triggering wrong wallet
+- [02-01]: Emoji icons for intent categories instead of SVG icon library
+- [02-01]: DashboardSection manages own data hooks internally, receives only address prop
 
 ### Pending Todos
 
@@ -69,5 +72,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-16
-Stopped at: Phase 1 complete — all 3 plans executed
+Stopped at: Completed 02-01-PLAN.md (intent card landing)
 Resume file: None
