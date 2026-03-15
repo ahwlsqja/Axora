@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 1 of 8 (Foundation & Subaccount Onboarding)
-Plan: 2 of 3 in current phase
-Status: Executing
-Last activity: 2026-03-16 -- Completed 01-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Complete
+Last activity: 2026-03-16 -- Completed 01-03-PLAN.md
 
-Progress: [██░░░░░░░░] 8%
+Progress: [██████████] 100% (Phase 1)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: ~17min
-- Total execution time: 0.57 hours
+- Total plans completed: 3
+- Average duration: ~20min
+- Total execution time: 1.0 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation-wallet | 2/3 | 34min | 17min |
+| 01-foundation-wallet | 3/3 | 59min | 20min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (14min), 01-02 (20min)
-- Trend: Starting
+- Last 5 plans: 01-01 (14min), 01-02 (20min), 01-03 (25min)
+- Trend: Stable
 
 *Updated after each plan completion*
 
@@ -52,6 +52,10 @@ Recent decisions affecting current work:
 - [01-02]: Keplr requires experimentalSuggestChain for injective-888 testnet
 - [01-02]: OKX Wallet overrides window.keplr; use keplr_wallet_provider fallback
 - [01-02]: wallet-ledger CryptoJS AMD issue resolved via empty module alias
+- [01-03]: AuthZ self-grants rejected by chain; deposit only for Phase 1, grants in Phase 4
+- [01-03]: Subaccount balance from indexer is in wei; needs BigInt 10^18 conversion
+- [01-03]: Rainbow Wallet overrides window.ethereum; getMetaMaskProvider() with providers array detection
+- [01-03]: ensureCorrectNetwork must take walletType to avoid triggering wrong wallet
 
 ### Pending Todos
 
@@ -65,5 +69,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-16
-Stopped at: Completed 01-02-PLAN.md (Wallet connection + balance display)
+Stopped at: Phase 1 complete — all 3 plans executed
 Resume file: None
