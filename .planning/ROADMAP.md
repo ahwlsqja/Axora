@@ -70,8 +70,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: LLM intent parser with Zod schema validation
-- [ ] 03-02: Strategy Engine validation and proposal UI
+- [ ] 03-01-PLAN.md — AI SDK setup, Zod schemas, prompts, spot market service, validator, and calculator
+- [ ] 03-02-PLAN.md — API route handler, strategy store, and React Query hooks
+- [ ] 03-03-PLAN.md — Proposal UI components and IntentConfirmation integration
 
 ### Phase 4: Delegated Execution
 **Goal**: Agent executes AI-structured strategies on Injective via the user's delegated subaccount without per-transaction signing
@@ -161,7 +162,7 @@ Phases execute in numeric order. Phases 5, 6, and 8 can run in parallel after Ph
 |-------|----------------|--------|-----------|
 | 1. Foundation & Subaccount Onboarding | 0/3 | Not started | - |
 | 2. Intent Entry UX | 0/2 | Not started | - |
-| 3. AI Strategy Engine | 0/2 | Not started | - |
+| 3. AI Strategy Engine | 0/3 | Not started | - |
 | 4. Delegated Execution | 0/2 | Not started | - |
 | 5. Composite Strategies | 0/2 | Not started | - |
 | 6. Monitoring & Status | 0/2 | Not started | - |
