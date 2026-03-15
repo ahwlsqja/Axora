@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 ## Current Position
 
 Phase: 2 of 8 (Intent Entry UX)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In Progress
-Last activity: 2026-03-16 -- Completed 02-01-PLAN.md
+Last activity: 2026-03-16 -- Completed 02-02-PLAN.md
 
-Progress: [███░░░░░░░] 33% (Phase 2)
+Progress: [██████░░░░] 67% (Phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: ~16min
+- Total plans completed: 5
+- Average duration: ~13min
 - Total execution time: 1.1 hours
 
 **By Phase:**
@@ -28,10 +28,10 @@ Progress: [███░░░░░░░] 33% (Phase 2)
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-wallet | 3/3 | 59min | 20min |
-| 02-intent-entry-ux | 1/3 | 4min | 4min |
+| 02-intent-entry-ux | 2/3 | 6min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (14min), 01-02 (20min), 01-03 (25min), 02-01 (4min)
+- Last 5 plans: 01-02 (20min), 01-03 (25min), 02-01 (4min), 02-02 (2min)
 - Trend: Accelerating
 
 *Updated after each plan completion*
@@ -59,6 +59,8 @@ Recent decisions affecting current work:
 - [01-03]: ensureCorrectNetwork must take walletType to avoid triggering wrong wallet
 - [02-01]: Emoji icons for intent categories instead of SVG icon library
 - [02-01]: DashboardSection manages own data hooks internally, receives only address prop
+- [02-02]: Wallet modal triggered locally in IntentConfirmation, not via global store
+- [02-02]: FreeTextInput disabled (not hidden) when intent selected for layout stability
 
 ### Pending Todos
 
@@ -72,5 +74,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-16
-Stopped at: Completed 02-01-PLAN.md (intent card landing)
+Stopped at: Completed 02-02-PLAN.md (free-text input and confirmation flow)
 Resume file: None
