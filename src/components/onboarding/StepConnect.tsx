@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Wallet } from '@injectivelabs/wallet-base'
 import { isWalletInstalled, getInstallUrl } from '@/services/injective/wallet'
 import { useWallet } from '@/hooks/useWallet'
@@ -13,6 +14,11 @@ const WALLET_OPTIONS = [
 export function StepConnect() {
   const { address, status, connect } = useWallet()
   const { nextStep, isWalletConnected } = useOnboarding()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSelect = async (walletType: Wallet) => {
     if (!isWalletInstalled(walletType)) {
@@ -68,7 +74,7 @@ export function StepConnect() {
       ) : (
         <div className="mt-6 space-y-3">
           {WALLET_OPTIONS.map(({ type, name, icon }) => {
-            const installed = isWalletInstalled(type)
+            const installed = mounted && isWalletInstalled(type)
             const isConnecting = status === 'connecting'
 
             return (

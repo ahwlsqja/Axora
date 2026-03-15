@@ -8,15 +8,22 @@ import { BalanceCardList } from '@/components/dashboard/BalanceCard'
 
 function AgentSubaccountCard({
   balances,
-  subaccountId,
 }: {
   balances: { denom: string; totalBalance: string; availableBalance: string }[]
-  subaccountId: string | null
 }) {
   // Find INJ balance in subaccount
   const injBalance = balances.find(
     (b) => b.denom === 'inj'
   )
+
+  // Convert from wei (10^18) to human-readable INJ
+  const formatWei = (wei: string): string => {
+    const num = BigInt(wei.split('.')[0]) // strip any decimals
+    const whole = num / BigInt(10 ** 18)
+    const remainder = num % BigInt(10 ** 18)
+    const decimals = remainder.toString().padStart(18, '0').slice(0, 4)
+    return `${whole}.${decimals}`
+  }
 
   return (
     <div className="rounded-xl border border-blue-100 bg-blue-50 p-5">
@@ -29,17 +36,12 @@ function AgentSubaccountCard({
       {injBalance ? (
         <div className="mt-2">
           <p className="text-2xl font-semibold text-blue-900">
-            {parseFloat(injBalance.availableBalance).toFixed(4)} INJ
+            {formatWei(injBalance.availableBalance)} INJ
           </p>
           <p className="text-xs text-blue-600 mt-0.5">Available for trading</p>
         </div>
       ) : (
         <p className="mt-2 text-sm text-blue-700">No INJ deposited</p>
-      )}
-      {subaccountId && (
-        <p className="mt-2 text-xs text-blue-400 font-mono truncate">
-          {subaccountId}
-        </p>
       )}
     </div>
   )
@@ -105,7 +107,6 @@ export default function Home() {
             {hasSubaccount ? (
               <AgentSubaccountCard
                 balances={subBalances}
-                subaccountId={subaccountId}
               />
             ) : !subLoading ? (
               <SetupAgentCard />

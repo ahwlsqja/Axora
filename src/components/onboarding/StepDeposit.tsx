@@ -31,7 +31,8 @@ export function StepDeposit() {
     0,
     parseFloat(injBalance?.amount ?? '0') - GAS_RESERVE
   )
-  const maxDeposit = Math.max(MIN_DEPOSIT, availableBalance)
+  // Allow at least 1 INJ slider range for testnet (user may get tokens from faucet)
+  const maxDeposit = Math.max(1, availableBalance)
 
   // Set default deposit amount on mount
   useEffect(() => {
@@ -157,7 +158,7 @@ export function StepDeposit() {
             <Slider.Thumb className="block h-5 w-5 rounded-full border-2 border-blue-600 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" />
           </Slider.Root>
 
-          <div className="relative w-28">
+          <div className="flex items-center gap-1.5">
             <input
               type="number"
               value={inputValue}
@@ -165,9 +166,9 @@ export function StepDeposit() {
               min={MIN_DEPOSIT}
               max={maxDeposit}
               step={0.001}
-              className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-right text-sm font-mono text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-24 rounded-lg border border-gray-200 px-3 py-1.5 text-right text-sm font-mono text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
+            <span className="text-xs text-gray-400 whitespace-nowrap">
               INJ
             </span>
           </div>
@@ -201,7 +202,7 @@ export function StepDeposit() {
           <div className="border-t border-gray-200 pt-2 flex justify-between">
             <span className="text-gray-500">Transaction</span>
             <span className="font-medium text-gray-900">
-              1 deposit + 4 authorization grants
+              1 deposit to agent subaccount
             </span>
           </div>
         </div>

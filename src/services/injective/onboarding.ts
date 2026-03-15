@@ -1,8 +1,10 @@
 import { MsgDeposit } from '@injectivelabs/sdk-ts'
 import { BigNumberInBase } from '@injectivelabs/utils'
+import { Wallet } from '@injectivelabs/wallet-base'
 import { getMsgBroadcaster } from './client'
 import { getAgentSubaccountId } from './subaccount'
 import { createSpotAuthzGrants } from './authz'
+import { ensureCorrectNetwork } from './wallet'
 
 /**
  * Execute the full onboarding transaction: deposit to agent subaccount + AuthZ grants.
@@ -19,7 +21,8 @@ import { createSpotAuthzGrants } from './authz'
  */
 export async function executeOnboarding(
   injectiveAddress: string,
-  depositAmountInj: number
+  depositAmountInj: number,
+  walletType: Wallet = Wallet.Keplr
 ): Promise<string> {
   const subaccountId = getAgentSubaccountId(injectiveAddress)
 
@@ -33,13 +36,17 @@ export async function executeOnboarding(
     injectiveAddress,
   })
 
-  // Create AuthZ grant messages (self-grant for Phase 1 -- agent address not yet available)
-  const grantMsgs = createSpotAuthzGrants(injectiveAddress, injectiveAddress)
+  // AuthZ grants require a different grantee address (chain rejects self-grants).
+  // Grants will be added in Phase 4 when the agent service has its own address.
+  // For now, only deposit to the agent subaccount.
 
-  // Broadcast all messages in a single transaction
+  // Ensure the active wallet is on the correct network before broadcasting
+  await ensureCorrectNetwork(walletType)
+
+  // Broadcast deposit message
   const broadcaster = getMsgBroadcaster()
   const response = await broadcaster.broadcast({
-    msgs: [depositMsg, ...grantMsgs],
+    msgs: [depositMsg],
     injectiveAddress,
   })
 

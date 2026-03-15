@@ -27,7 +27,7 @@ export function useOnboarding() {
     reset,
   } = useOnboardingStore()
 
-  const { address, status } = useWalletStore()
+  const { address, walletType, status } = useWalletStore()
   const isWalletConnected = status === 'connected'
 
   /**
@@ -44,7 +44,7 @@ export function useOnboarding() {
     setError(null)
 
     try {
-      const hash = await executeOnboarding(address, depositAmount)
+      const hash = await executeOnboarding(address, depositAmount, walletType!)
       setTxHash(hash)
       toast.success('Onboarding complete! Agent account created.')
     } catch (err) {
@@ -55,7 +55,7 @@ export function useOnboarding() {
     } finally {
       setExecuting(false)
     }
-  }, [address, depositAmount, setExecuting, setError, setTxHash])
+  }, [address, walletType, depositAmount, setExecuting, setError, setTxHash])
 
   /**
    * Whether the user can proceed from the current step.

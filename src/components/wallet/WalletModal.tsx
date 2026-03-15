@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Wallet } from '@injectivelabs/wallet-base'
 import { isWalletInstalled, getInstallUrl } from '@/services/injective/wallet'
@@ -17,6 +18,11 @@ const WALLET_OPTIONS = [
 
 export function WalletModal({ open, onOpenChange }: WalletModalProps) {
   const { connect, status } = useWallet()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSelect = async (walletType: Wallet) => {
     if (!isWalletInstalled(walletType)) {
@@ -43,7 +49,7 @@ export function WalletModal({ open, onOpenChange }: WalletModalProps) {
 
           <div className="mt-6 space-y-3">
             {WALLET_OPTIONS.map(({ type, name, icon }) => {
-              const installed = isWalletInstalled(type)
+              const installed = mounted && isWalletInstalled(type)
               const isConnecting = status === 'connecting'
 
               return (

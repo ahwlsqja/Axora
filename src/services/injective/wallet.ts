@@ -63,9 +63,28 @@ async function suggestChainToKeplr(): Promise<void> {
  */
 function getKeplr(): typeof window.keplr | undefined {
   if (typeof window === 'undefined') return undefined
-  // Keplr extension stores its original reference here
   return (window as unknown as Record<string, unknown>).keplr_wallet_provider as typeof window.keplr
     ?? window.keplr
+}
+
+/**
+ * Get the real MetaMask provider, bypassing other wallet overrides.
+ * When multiple wallets are installed, window.ethereum.providers has all of them.
+ */
+function getMetaMaskProvider(): typeof window.ethereum | undefined {
+  if (typeof window === 'undefined' || !window.ethereum) return undefined
+
+  // Check providers array (EIP-6963 / multi-wallet scenario)
+  const providers = (window.ethereum as unknown as { providers?: Array<{ isMetaMask?: boolean }> }).providers
+  if (providers) {
+    const mm = providers.find((p) => p.isMetaMask && !(p as Record<string, unknown>).isRabby)
+    if (mm) return mm as typeof window.ethereum
+  }
+
+  // Single provider — check if it's actually MetaMask
+  if (window.ethereum.isMetaMask) return window.ethereum
+
+  return undefined
 }
 
 /**
@@ -78,9 +97,54 @@ export function isWalletInstalled(walletType: Wallet): boolean {
     case Wallet.Keplr:
       return !!getKeplr()
     case Wallet.Metamask:
-      return !!window.ethereum
+      return !!getMetaMaskProvider()
     default:
       return false
+  }
+}
+
+/**
+ * Add the Injective EVM chain to MetaMask.
+ * Required for testnet since MetaMask doesn't have it by default.
+ */
+async function addInjectiveToMetaMask(): Promise<void> {
+  const provider = getMetaMaskProvider()
+  if (!provider) return
+
+  const isTestnet = NETWORK === Network.Testnet
+
+  try {
+    // First try switching to the chain (in case it's already added)
+    await provider.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: isTestnet ? '0xA96' : '0x1' }], // 2710 for testnet, 1 for mainnet
+    })
+  } catch (switchError: unknown) {
+    // Chain not added yet (error code 4902) — add it
+    if ((switchError as { code?: number })?.code === 4902) {
+      await provider.request({
+        method: 'wallet_addEthereumChain',
+        params: [
+          {
+            chainId: isTestnet ? '0xA96' : '0x1',
+            chainName: isTestnet ? 'Injective Testnet' : 'Injective',
+            nativeCurrency: {
+              name: 'Injective',
+              symbol: 'INJ',
+              decimals: 18,
+            },
+            rpcUrls: isTestnet
+              ? ['https://testnet.sentry.evm.rpc.injective.network']
+              : ['https://sentry.evm.rpc.injective.network'],
+            blockExplorerUrls: isTestnet
+              ? ['https://testnet.explorer.injective.network']
+              : ['https://explorer.injective.network'],
+          },
+        ],
+      })
+    } else {
+      throw switchError
+    }
   }
 }
 
@@ -104,13 +168,21 @@ export function getInstallUrl(walletType: Wallet): string {
  * and converts MetaMask ETH addresses to Injective format.
  */
 export async function connectWallet(walletType: Wallet): Promise<string> {
-  // Suggest Injective chain to Keplr before connecting (required for testnet)
+  // Ensure correct network before connecting
   if (walletType === Wallet.Keplr) {
     await suggestChainToKeplr()
-    // Enable the chain after suggesting it
     const chainId = NETWORK === Network.Testnet ? 'injective-888' : 'injective-1'
     const keplr = getKeplr()
     if (keplr) await keplr.enable(chainId)
+  } else if (walletType === Wallet.Metamask) {
+    // WalletStrategy uses window.ethereum internally.
+    // If another wallet (Rainbow, OKX, etc.) overrides it, swap in real MetaMask.
+    const realMM = getMetaMaskProvider()
+    if (realMM && window.ethereum !== realMM) {
+      (window as unknown as Record<string, unknown>).__original_ethereum = window.ethereum
+      window.ethereum = realMM
+    }
+    await addInjectiveToMetaMask()
   }
 
   const strategy = getWalletStrategy()
@@ -151,6 +223,25 @@ export function disconnectWallet(): void {
     localStorage.removeItem(STORAGE_KEY)
   } catch {
     // ignore
+  }
+}
+
+/**
+ * Ensure the active wallet is on the correct Injective network before broadcasting.
+ * Only touches the wallet type that is currently connected.
+ */
+export async function ensureCorrectNetwork(walletType: Wallet): Promise<void> {
+  if (walletType === Wallet.Keplr) {
+    const keplr = getKeplr()
+    if (keplr) {
+      const chainId = NETWORK === Network.Testnet ? 'injective-888' : 'injective-1'
+      await suggestChainToKeplr()
+      await keplr.enable(chainId)
+    }
+  } else if (walletType === Wallet.Metamask) {
+    if (getMetaMaskProvider()) {
+      await addInjectiveToMetaMask()
+    }
   }
 }
 
