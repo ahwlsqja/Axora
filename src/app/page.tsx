@@ -1,12 +1,94 @@
 'use client'
 
+import Link from 'next/link'
 import { useWallet } from '@/hooks/useWallet'
 import { useBalances } from '@/hooks/useBalances'
+import { useSubaccountBalance } from '@/hooks/useSubaccountBalance'
 import { BalanceCardList } from '@/components/dashboard/BalanceCard'
+
+function AgentSubaccountCard({
+  balances,
+  subaccountId,
+}: {
+  balances: { denom: string; totalBalance: string; availableBalance: string }[]
+  subaccountId: string | null
+}) {
+  // Find INJ balance in subaccount
+  const injBalance = balances.find(
+    (b) => b.denom === 'inj'
+  )
+
+  return (
+    <div className="rounded-xl border border-blue-100 bg-blue-50 p-5">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-blue-900">Agent Account</h3>
+        <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+          Active
+        </span>
+      </div>
+      {injBalance ? (
+        <div className="mt-2">
+          <p className="text-2xl font-semibold text-blue-900">
+            {parseFloat(injBalance.availableBalance).toFixed(4)} INJ
+          </p>
+          <p className="text-xs text-blue-600 mt-0.5">Available for trading</p>
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-blue-700">No INJ deposited</p>
+      )}
+      {subaccountId && (
+        <p className="mt-2 text-xs text-blue-400 font-mono truncate">
+          {subaccountId}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function SetupAgentCard() {
+  return (
+    <Link
+      href="/onboarding"
+      className="block rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-5 transition-colors hover:bg-blue-50 hover:border-blue-300"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+          <svg
+            className="h-5 w-5 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
+          </svg>
+        </div>
+        <div>
+          <div className="text-sm font-medium text-blue-900">
+            Set Up Agent Account
+          </div>
+          <div className="text-xs text-blue-600">
+            Create a sub-wallet for automated trading
+          </div>
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 export default function Home() {
   const { address, status } = useWallet()
   const { balances, isLoading } = useBalances(address)
+  const {
+    balances: subBalances,
+    subaccountId,
+    hasSubaccount,
+    isLoading: subLoading,
+  } = useSubaccountBalance(address)
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -18,6 +100,19 @@ export default function Home() {
         </div>
       ) : (
         <div>
+          {/* Agent account section */}
+          <div className="mb-8">
+            {hasSubaccount ? (
+              <AgentSubaccountCard
+                balances={subBalances}
+                subaccountId={subaccountId}
+              />
+            ) : !subLoading ? (
+              <SetupAgentCard />
+            ) : null}
+          </div>
+
+          {/* Main balances */}
           <h2 className="mb-6 text-xl font-semibold text-gray-900">
             Your Balances
           </h2>
