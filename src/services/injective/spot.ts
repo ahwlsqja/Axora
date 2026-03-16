@@ -59,10 +59,21 @@ export async function fetchMarketSnapshot(
     throw new Error(`Market ${marketId} not found`)
   }
 
+  const baseDecimals = market.baseToken?.decimals ?? 18
+  const quoteDecimals = market.quoteToken?.decimals ?? 6
+
+  // Injective orderbook prices are in raw chain format.
+  // Convert to human-readable: multiply by 10^(baseDecimals - quoteDecimals)
+  const priceScale = Math.pow(10, baseDecimals - quoteDecimals)
+
   const bestBid =
-    orderbook.buys.length > 0 ? Number(orderbook.buys[0].price) : 0
+    orderbook.buys.length > 0
+      ? Number(orderbook.buys[0].price) * priceScale
+      : 0
   const bestAsk =
-    orderbook.sells.length > 0 ? Number(orderbook.sells[0].price) : 0
+    orderbook.sells.length > 0
+      ? Number(orderbook.sells[0].price) * priceScale
+      : 0
 
   const midPrice =
     bestBid > 0 && bestAsk > 0 ? (bestBid + bestAsk) / 2 : bestBid || bestAsk
@@ -79,8 +90,8 @@ export async function fetchMarketSnapshot(
       bids: orderbook.buys.length,
       asks: orderbook.sells.length,
     },
-    baseDecimals: market.baseToken?.decimals ?? 18,
-    quoteDecimals: market.quoteToken?.decimals ?? 6,
+    baseDecimals,
+    quoteDecimals,
   }
 }
 
@@ -110,6 +121,15 @@ export async function getSupportedMarkets(): Promise<
     if (match) {
       result[key] = match.marketId
     }
+  }
+
+  // Fallback: if no denom match found (e.g., testnet uses different denoms),
+  // use the first available spot market with INJ in its ticker
+  if (Object.keys(result).length === 0 && allMarkets.length > 0) {
+    const injMarket = allMarkets.find(
+      (m) => m.ticker?.toLowerCase().includes('inj')
+    ) ?? allMarkets[0]
+    result['INJ/USDT'] = injMarket.marketId
   }
 
   cachedMarketMap = result

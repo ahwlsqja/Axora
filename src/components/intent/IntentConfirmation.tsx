@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { useIntentStore } from '@/stores/intentStore'
 import { useStrategyStore } from '@/stores/strategyStore'
 import { PRESET_INTENTS } from '@/constants/intents'
@@ -39,11 +40,13 @@ export function IntentConfirmation() {
       return
     }
 
-    if (!supportedMarkets) return
+    if (!supportedMarkets || Object.keys(supportedMarkets).length === 0) {
+      toast.error('마켓 데이터를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+      return
+    }
 
     // Use first supported market (INJ/USDT for MVP)
     const marketEntries = Object.entries(supportedMarkets)
-    if (marketEntries.length === 0) return
 
     const [, marketId] = marketEntries[0]
 

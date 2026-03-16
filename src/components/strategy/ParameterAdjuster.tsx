@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import * as Slider from '@radix-ui/react-slider'
 import { useStrategyStore } from '@/stores/strategyStore'
 
@@ -10,30 +10,79 @@ export function ParameterAdjuster() {
   const adjustPriceRange = useStrategyStore((s) => s.adjustPriceRange)
   const adjustTotalAmount = useStrategyStore((s) => s.adjustTotalAmount)
 
+  // Local state for immediate UI feedback
+  const [localSplits, setLocalSplits] = useState(proposal?.splitCount ?? 5)
+  const [localPriceMin, setLocalPriceMin] = useState(
+    proposal?.priceRange.min.toString() ?? ''
+  )
+  const [localPriceMax, setLocalPriceMax] = useState(
+    proposal?.priceRange.max.toString() ?? ''
+  )
+  const [localAmount, setLocalAmount] = useState(
+    proposal?.totalCapitalRequired.toString() ?? ''
+  )
+
+  // Sync local state when proposal changes from outside (e.g., new generation)
+  useEffect(() => {
+    if (proposal) {
+      setLocalSplits(proposal.splitCount)
+      setLocalPriceMin(proposal.priceRange.min.toString())
+      setLocalPriceMax(proposal.priceRange.max.toString())
+      setLocalAmount(proposal.totalCapitalRequired.toString())
+    }
+  }, [proposal?.splitCount, proposal?.priceRange.min, proposal?.priceRange.max, proposal?.totalCapitalRequired])
+
   const splitTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const priceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const amountTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const debouncedSplit = useCallback(
+  const handleSplitChange = useCallback(
     (value: number) => {
+      setLocalSplits(value)
       if (splitTimer.current) clearTimeout(splitTimer.current)
       splitTimer.current = setTimeout(() => adjustSplitCount(value), 300)
     },
     [adjustSplitCount]
   )
 
-  const debouncedPriceRange = useCallback(
-    (min: number, max: number) => {
-      if (priceTimer.current) clearTimeout(priceTimer.current)
-      priceTimer.current = setTimeout(() => adjustPriceRange(min, max), 300)
+  const handlePriceMinChange = useCallback(
+    (raw: string) => {
+      setLocalPriceMin(raw)
+      const min = parseFloat(raw)
+      if (!isNaN(min) && min > 0 && proposal) {
+        if (priceTimer.current) clearTimeout(priceTimer.current)
+        priceTimer.current = setTimeout(
+          () => adjustPriceRange(min, proposal.priceRange.max),
+          500
+        )
+      }
     },
-    [adjustPriceRange]
+    [adjustPriceRange, proposal]
   )
 
-  const debouncedAmount = useCallback(
-    (value: number) => {
-      if (amountTimer.current) clearTimeout(amountTimer.current)
-      amountTimer.current = setTimeout(() => adjustTotalAmount(value), 300)
+  const handlePriceMaxChange = useCallback(
+    (raw: string) => {
+      setLocalPriceMax(raw)
+      const max = parseFloat(raw)
+      if (!isNaN(max) && max > 0 && proposal) {
+        if (priceTimer.current) clearTimeout(priceTimer.current)
+        priceTimer.current = setTimeout(
+          () => adjustPriceRange(proposal.priceRange.min, max),
+          500
+        )
+      }
+    },
+    [adjustPriceRange, proposal]
+  )
+
+  const handleAmountChange = useCallback(
+    (raw: string) => {
+      setLocalAmount(raw)
+      const val = parseFloat(raw)
+      if (!isNaN(val) && val > 0) {
+        if (amountTimer.current) clearTimeout(amountTimer.current)
+        amountTimer.current = setTimeout(() => adjustTotalAmount(val), 500)
+      }
     },
     [adjustTotalAmount]
   )
@@ -43,22 +92,23 @@ export function ParameterAdjuster() {
   return (
     <div className="space-y-5">
       <p className="text-sm font-semibold text-gray-700">
-        파라미터 조정 <span className="font-normal text-gray-400">Adjust Parameters</span>
+        파라미터 조정{' '}
+        <span className="font-normal text-gray-400">Adjust Parameters</span>
       </p>
 
       {/* Split Count */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600">분할 수 (Splits)</span>
-          <span className="font-mono text-gray-800">{proposal.splitCount}</span>
+          <span className="font-mono text-gray-800">{localSplits}</span>
         </div>
         <Slider.Root
           className="relative flex h-5 w-full touch-none select-none items-center"
-          value={[proposal.splitCount]}
+          value={[localSplits]}
           min={1}
           max={20}
           step={1}
-          onValueChange={([v]) => debouncedSplit(v)}
+          onValueChange={([v]) => handleSplitChange(v)}
         >
           <Slider.Track className="relative h-1.5 w-full grow rounded-full bg-gray-200">
             <Slider.Range className="absolute h-full rounded-full bg-blue-500" />
@@ -74,26 +124,16 @@ export function ParameterAdjuster() {
           <input
             type="number"
             step="0.01"
-            value={proposal.priceRange.min}
-            onChange={(e) => {
-              const min = parseFloat(e.target.value)
-              if (!isNaN(min) && min > 0) {
-                debouncedPriceRange(min, proposal.priceRange.max)
-              }
-            }}
+            value={localPriceMin}
+            onChange={(e) => handlePriceMinChange(e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-mono focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           <span className="text-xs text-gray-400">~</span>
           <input
             type="number"
             step="0.01"
-            value={proposal.priceRange.max}
-            onChange={(e) => {
-              const max = parseFloat(e.target.value)
-              if (!isNaN(max) && max > 0) {
-                debouncedPriceRange(proposal.priceRange.min, max)
-              }
-            }}
+            value={localPriceMax}
+            onChange={(e) => handlePriceMaxChange(e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-mono focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
@@ -111,13 +151,8 @@ export function ParameterAdjuster() {
           type="number"
           step="1"
           min={1}
-          value={proposal.totalCapitalRequired}
-          onChange={(e) => {
-            const val = parseFloat(e.target.value)
-            if (!isNaN(val) && val > 0) {
-              debouncedAmount(val)
-            }
-          }}
+          value={localAmount}
+          onChange={(e) => handleAmountChange(e.target.value)}
           className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-mono focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
