@@ -20,6 +20,9 @@ const SUPPORTED_MARKETS: Record<
 /** Module-level cache for resolved market IDs */
 let cachedMarketMap: Record<string, string> | null = null
 
+/** Module-level cache for market metadata (symbols derived from ticker) */
+let cachedMarketMeta: Record<string, { baseSymbol: string; quoteSymbol: string }> | null = null
+
 function getSpotApi(): IndexerGrpcSpotApi {
   return new IndexerGrpcSpotApi(getEndpoints().indexer)
 }
@@ -129,9 +132,38 @@ export async function getSupportedMarkets(): Promise<
     const injMarket = allMarkets.find(
       (m) => m.ticker?.toLowerCase().includes('inj')
     ) ?? allMarkets[0]
-    result['INJ/USDT'] = injMarket.marketId
+    const label = injMarket.ticker ?? 'INJ/USDT'
+    result[label] = injMarket.marketId
   }
+
+  // Build metadata cache from actual market data
+  const meta: Record<string, { baseSymbol: string; quoteSymbol: string }> = {}
+  for (const [label, marketId] of Object.entries(result)) {
+    const m = allMarkets.find((am) => am.marketId === marketId)
+    if (m?.ticker) {
+      const parts = m.ticker.split('/')
+      meta[marketId] = {
+        baseSymbol: parts[0] ?? label.split('/')[0] ?? 'UNKNOWN',
+        quoteSymbol: parts[1] ?? label.split('/')[1] ?? 'UNKNOWN',
+      }
+    } else {
+      const parts = label.split('/')
+      meta[marketId] = {
+        baseSymbol: parts[0] ?? 'UNKNOWN',
+        quoteSymbol: parts[1] ?? 'UNKNOWN',
+      }
+    }
+  }
+  cachedMarketMeta = meta
 
   cachedMarketMap = result
   return result
+}
+
+/**
+ * Get the base/quote symbols for a market ID.
+ * Must call getSupportedMarkets() first to populate the cache.
+ */
+export function getMarketSymbols(marketId: string): { baseSymbol: string; quoteSymbol: string } {
+  return cachedMarketMeta?.[marketId] ?? { baseSymbol: 'UNKNOWN', quoteSymbol: 'UNKNOWN' }
 }

@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 import { getModel } from '@/lib/ai/provider'
 import { strategyProposalSchema } from '@/lib/ai/schemas'
 import { buildSystemPrompt, getPromptForIntent } from '@/lib/ai/prompts'
-import { fetchMarketSnapshot } from '@/services/injective/spot'
+import { fetchMarketSnapshot, getMarketSymbols } from '@/services/injective/spot'
 import { validateProposal } from '@/lib/strategy/validator'
 import type { StrategyGenerationRequest } from '@/lib/strategy/types'
 
@@ -56,10 +56,11 @@ export async function POST(request: Request) {
 
     const proposal = result.output
 
-    // Inject market context that AI shouldn't generate — never trust AI for these
+    // Inject market context from actual chain data — never trust AI for these
+    const symbols = getMarketSymbols(marketId)
     proposal.marketId = marketId
-    proposal.baseDenom = 'INJ'
-    proposal.quoteDenom = 'USDT'
+    proposal.baseDenom = symbols.baseSymbol
+    proposal.quoteDenom = symbols.quoteSymbol
 
     // Post-validate against market reality
     const validation = validateProposal(proposal, market)
