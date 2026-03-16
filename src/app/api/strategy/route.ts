@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 import { getModel } from '@/lib/ai/provider'
 import { strategyProposalSchema } from '@/lib/ai/schemas'
 import { buildSystemPrompt, getPromptForIntent } from '@/lib/ai/prompts'
-import { fetchMarketSnapshot, getMarketSymbols } from '@/services/injective/spot'
+import { fetchMarketSnapshot, getMarketSymbols, getSupportedMarkets } from '@/services/injective/spot'
 import { validateProposal } from '@/lib/strategy/validator'
 import type { StrategyGenerationRequest } from '@/lib/strategy/types'
 
@@ -32,6 +32,9 @@ export async function POST(request: Request) {
 
     // Truncate freeText to 500 chars
     const safeFreeText = typeof freeText === 'string' ? freeText.slice(0, 500) : ''
+
+    // Ensure market metadata cache is populated before getMarketSymbols()
+    await getSupportedMarkets()
 
     // Fetch market snapshot for context and validation
     const market = await fetchMarketSnapshot(marketId)

@@ -8,6 +8,8 @@ interface StrategyState {
   proposal: StrategyProposal | null
   validation: ValidationResult | null
   marketSnapshot: MarketSnapshot | null
+  /** Monotonically increasing ID to uniquely identify each proposal generation */
+  proposalId: number
   isGenerating: boolean
   error: string | null
 
@@ -32,17 +34,19 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
   proposal: null,
   validation: null,
   marketSnapshot: null,
+  proposalId: 0,
   isGenerating: false,
   error: null,
 
   setProposal: (proposal, validation, market) => {
-    set({
+    set((state) => ({
       proposal,
       validation,
       marketSnapshot: market,
+      proposalId: state.proposalId + 1,
       isGenerating: false,
       error: null,
-    })
+    }))
   },
 
   setGenerating: () => {
@@ -114,12 +118,13 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
   },
 
   reset: () => {
-    set({
+    set((state) => ({
       proposal: null,
       validation: null,
       marketSnapshot: null,
+      proposalId: state.proposalId + 1,
       isGenerating: false,
       error: null,
-    })
+    }))
   },
 }))

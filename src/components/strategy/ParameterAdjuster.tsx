@@ -6,6 +6,7 @@ import { useStrategyStore } from '@/stores/strategyStore'
 
 export function ParameterAdjuster() {
   const proposal = useStrategyStore((s) => s.proposal)
+  const proposalId = useStrategyStore((s) => s.proposalId)
   const adjustSplitCount = useStrategyStore((s) => s.adjustSplitCount)
   const adjustPriceRange = useStrategyStore((s) => s.adjustPriceRange)
   const adjustTotalAmount = useStrategyStore((s) => s.adjustTotalAmount)
@@ -43,21 +44,20 @@ export function ParameterAdjuster() {
       if (priceTimer.current) clearTimeout(priceTimer.current)
       if (amountTimer.current) clearTimeout(amountTimer.current)
     }
-  }, [proposal?.marketId, proposal?.strategyType])
+  }, [proposalId])
 
   const handleSplitChange = useCallback(
     (value: number) => {
       setLocalSplits(value)
       if (splitTimer.current) clearTimeout(splitTimer.current)
-      const currentMarketId = proposal?.marketId
+      const capturedId = proposalId
       splitTimer.current = setTimeout(() => {
-        // Guard: only apply if proposal hasn't been replaced
-        if (useStrategyStore.getState().proposal?.marketId === currentMarketId) {
+        if (useStrategyStore.getState().proposalId === capturedId) {
           adjustSplitCount(value)
         }
       }, 300)
     },
-    [adjustSplitCount, proposal?.marketId]
+    [adjustSplitCount, proposalId]
   )
 
   const handlePriceMinChange = useCallback(
@@ -66,16 +66,16 @@ export function ParameterAdjuster() {
       const min = parseFloat(raw)
       if (!isNaN(min) && min > 0 && proposal) {
         if (priceTimer.current) clearTimeout(priceTimer.current)
-        const currentMarketId = proposal.marketId
+        const capturedId = proposalId
         const currentMax = proposal.priceRange.max
         priceTimer.current = setTimeout(() => {
-          if (useStrategyStore.getState().proposal?.marketId === currentMarketId) {
+          if (useStrategyStore.getState().proposalId === capturedId) {
             adjustPriceRange(min, currentMax)
           }
         }, 500)
       }
     },
-    [adjustPriceRange, proposal?.marketId, proposal?.priceRange.max]
+    [adjustPriceRange, proposalId, proposal?.priceRange.max]
   )
 
   const handlePriceMaxChange = useCallback(
@@ -84,16 +84,16 @@ export function ParameterAdjuster() {
       const max = parseFloat(raw)
       if (!isNaN(max) && max > 0 && proposal) {
         if (priceTimer.current) clearTimeout(priceTimer.current)
-        const currentMarketId = proposal.marketId
+        const capturedId = proposalId
         const currentMin = proposal.priceRange.min
         priceTimer.current = setTimeout(() => {
-          if (useStrategyStore.getState().proposal?.marketId === currentMarketId) {
+          if (useStrategyStore.getState().proposalId === capturedId) {
             adjustPriceRange(currentMin, max)
           }
         }, 500)
       }
     },
-    [adjustPriceRange, proposal?.marketId, proposal?.priceRange.min]
+    [adjustPriceRange, proposalId, proposal?.priceRange.min]
   )
 
   const handleAmountChange = useCallback(
@@ -102,15 +102,15 @@ export function ParameterAdjuster() {
       const val = parseFloat(raw)
       if (!isNaN(val) && val > 0) {
         if (amountTimer.current) clearTimeout(amountTimer.current)
-        const currentMarketId = proposal?.marketId
+        const capturedId = proposalId
         amountTimer.current = setTimeout(() => {
-          if (useStrategyStore.getState().proposal?.marketId === currentMarketId) {
+          if (useStrategyStore.getState().proposalId === capturedId) {
             adjustTotalAmount(val)
           }
         }, 500)
       }
     },
-    [adjustTotalAmount, proposal?.marketId]
+    [adjustTotalAmount, proposalId]
   )
 
   if (!proposal) return null
