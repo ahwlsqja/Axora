@@ -1,10 +1,14 @@
 'use client'
 
-import { toast } from 'sonner'
 import { useStrategyStore } from '@/stores/strategyStore'
+import { useExecutionStore } from '@/stores/executionStore'
+import { useExecution } from '@/hooks/useExecution'
 import { OrderPreview } from './OrderPreview'
 import { ParameterAdjuster } from './ParameterAdjuster'
 import { RiskWarning } from './RiskWarning'
+import { ConfirmationDialog } from '@/components/execution/ConfirmationDialog'
+import { ExecutionStatus } from '@/components/execution/ExecutionStatus'
+import { ActiveOrders } from '@/components/execution/ActiveOrders'
 
 const STRATEGY_LABELS: Record<string, { ko: string; en: string; color: string }> = {
   dca: { ko: '분할매수', en: 'DCA', color: 'bg-blue-100 text-blue-700' },
@@ -22,9 +26,17 @@ const STRATEGY_LABELS: Record<string, { ko: string; en: string; color: string }>
 export function ProposalCard() {
   const proposal = useStrategyStore((s) => s.proposal)
   const validation = useStrategyStore((s) => s.validation)
+  const marketSnapshot = useStrategyStore((s) => s.marketSnapshot)
+  const proposalId = useStrategyStore((s) => s.proposalId)
   const isGenerating = useStrategyStore((s) => s.isGenerating)
-  const error = useStrategyStore((s) => s.error)
-  const reset = useStrategyStore((s) => s.reset)
+  const strategyError = useStrategyStore((s) => s.error)
+  const resetStrategy = useStrategyStore((s) => s.reset)
+
+  const executionPhase = useExecutionStore((s) => s.phase)
+  const startConfirmation = useExecutionStore((s) => s.startConfirmation)
+  const resetExecution = useExecutionStore((s) => s.reset)
+
+  const { execute, phase, txHash, error: executionError, reset: resetExec } = useExecution()
 
   if (isGenerating) {
     return (
@@ -42,14 +54,14 @@ export function ProposalCard() {
     )
   }
 
-  if (error) {
+  if (strategyError) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6">
         <p className="text-sm font-medium text-red-800">전략 생성 실패 (Strategy Generation Failed)</p>
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-sm text-red-600">{strategyError}</p>
         <button
           type="button"
-          onClick={reset}
+          onClick={resetStrategy}
           className="mt-3 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
         >
           다시 시도 (Retry)
@@ -67,6 +79,23 @@ export function ProposalCard() {
   }
 
   const isValid = validation?.valid !== false
+  const isExecuting = phase !== 'idle' && phase !== 'confirming'
+  const showActiveOrders = phase === 'success' || phase === 'idle'
+
+  const baseDecimals = marketSnapshot?.baseDecimals ?? 18
+  const quoteDecimals = marketSnapshot?.quoteDecimals ?? 6
+
+  const handleExecuteClick = () => {
+    startConfirmation(proposalId, proposal.marketId)
+  }
+
+  const handleConfirm = () => {
+    execute(proposal, baseDecimals, quoteDecimals, proposal.quoteDenom)
+  }
+
+  const handleCancel = () => {
+    resetExecution()
+  }
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-5">
@@ -129,19 +158,48 @@ export function ProposalCard() {
         <p className="text-sm text-gray-600">{proposal.worstCaseOutcome}</p>
       </div>
 
-      {/* Footer: Execute Button */}
-      <button
-        type="button"
-        disabled={!isValid}
-        onClick={() => toast.info('실행 기능은 Phase 4에서 제공됩니다 (Execution coming in Phase 4)')}
-        className={`w-full rounded-xl py-3 text-sm font-semibold transition ${
-          isValid
-            ? 'bg-blue-600 text-white hover:bg-blue-700'
-            : 'cursor-not-allowed bg-gray-200 text-gray-400'
-        }`}
-      >
-        {isValid ? '실행하기 (Proceed to Execute)' : '전략 수정 필요 (Fix Strategy Issues)'}
-      </button>
+      {/* Execution Status (signing / broadcasting / success / error) */}
+      {isExecuting && (
+        <ExecutionStatus
+          phase={phase}
+          txHash={txHash}
+          error={executionError}
+          onReset={resetExec}
+        />
+      )}
+
+      {/* Execute Button */}
+      {!isExecuting && (
+        <button
+          type="button"
+          disabled={!isValid || executionPhase !== 'idle'}
+          onClick={handleExecuteClick}
+          className={`w-full rounded-xl py-3 text-sm font-semibold transition ${
+            isValid && executionPhase === 'idle'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'cursor-not-allowed bg-gray-200 text-gray-400'
+          }`}
+        >
+          {isValid ? '실행하기 (Execute Strategy)' : '전략 수정 필요 (Fix Strategy Issues)'}
+        </button>
+      )}
+
+      {/* Active Orders */}
+      {showActiveOrders && (
+        <ActiveOrders
+          marketId={proposal.marketId}
+          baseDecimals={baseDecimals}
+          quoteDecimals={quoteDecimals}
+        />
+      )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        proposal={proposal}
+        open={executionPhase === 'confirming'}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   )
 }
