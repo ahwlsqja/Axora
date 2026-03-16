@@ -36,9 +36,5 @@ export interface StrategyGenerationRequest {
 export interface StrategyGenerationResponse {
   proposal: StrategyProposal
   validation: ValidationResult
-  market: {
-    midPrice: number
-    bestBid: number
-    bestAsk: number
-  }
+  market: MarketSnapshot
 }

@@ -72,17 +72,14 @@ export function validateProposal(
     errors.push('Total capital required must be positive')
   }
 
+  // Capital is always in quote currency (USDT).
+  // For buy: quote spent = price * quantity
+  // For sell: quote received = price * quantity
   const computedCapital = proposal.orders.reduce((sum, order) => {
-    if (order.side === 'buy') {
-      return sum + order.price * order.quantity
-    }
-    // For sell orders, capital is the quantity of base asset
-    return sum + order.quantity
+    return sum + order.price * order.quantity
   }, 0)
 
-  // Only check capital consistency for buy-side strategies
-  const hasBuyOrders = proposal.orders.some((o) => o.side === 'buy')
-  if (hasBuyOrders && computedCapital > 0) {
+  if (computedCapital > 0) {
     const capitalDiscrepancy =
       Math.abs(computedCapital - proposal.totalCapitalRequired) /
       proposal.totalCapitalRequired

@@ -35,7 +35,7 @@ export function useStrategy() {
       setGenerating()
     },
     onSuccess: (data) => {
-      setProposal(data.proposal, data.validation)
+      setProposal(data.proposal, data.validation, data.market)
     },
     onError: (error: Error) => {
       setError(error.message)

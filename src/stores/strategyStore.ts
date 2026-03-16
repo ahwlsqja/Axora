@@ -1,15 +1,17 @@
 import { create } from 'zustand'
 import type { StrategyProposal } from '@/lib/ai/schemas'
-import type { ValidationResult } from '@/lib/strategy/types'
+import type { ValidationResult, MarketSnapshot } from '@/lib/strategy/types'
 import { recalculateOrders } from '@/lib/strategy/calculator'
+import { validateProposal } from '@/lib/strategy/validator'
 
 interface StrategyState {
   proposal: StrategyProposal | null
   validation: ValidationResult | null
+  marketSnapshot: MarketSnapshot | null
   isGenerating: boolean
   error: string | null
 
-  setProposal: (proposal: StrategyProposal, validation: ValidationResult) => void
+  setProposal: (proposal: StrategyProposal, validation: ValidationResult, market: MarketSnapshot) => void
   setGenerating: () => void
   setError: (msg: string) => void
   adjustSplitCount: (count: number) => void
@@ -18,16 +20,26 @@ interface StrategyState {
   reset: () => void
 }
 
+/**
+ * Re-validate proposal against stored market snapshot after parameter adjustment.
+ */
+function revalidate(proposal: StrategyProposal, market: MarketSnapshot | null): ValidationResult | null {
+  if (!market) return null
+  return validateProposal(proposal, market)
+}
+
 export const useStrategyStore = create<StrategyState>((set, get) => ({
   proposal: null,
   validation: null,
+  marketSnapshot: null,
   isGenerating: false,
   error: null,
 
-  setProposal: (proposal, validation) => {
+  setProposal: (proposal, validation, market) => {
     set({
       proposal,
       validation,
+      marketSnapshot: market,
       isGenerating: false,
       error: null,
     })
@@ -42,7 +54,7 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
   },
 
   adjustSplitCount: (count) => {
-    const { proposal } = get()
+    const { proposal, marketSnapshot } = get()
     if (!proposal) return
 
     const side = proposal.orders[0]?.side ?? 'buy'
@@ -54,17 +66,15 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
       side,
     })
 
+    const updated = { ...proposal, splitCount: count, orders }
     set({
-      proposal: {
-        ...proposal,
-        splitCount: count,
-        orders,
-      },
+      proposal: updated,
+      validation: revalidate(updated, marketSnapshot),
     })
   },
 
   adjustPriceRange: (min, max) => {
-    const { proposal } = get()
+    const { proposal, marketSnapshot } = get()
     if (!proposal) return
 
     const side = proposal.orders[0]?.side ?? 'buy'
@@ -76,17 +86,15 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
       side,
     })
 
+    const updated = { ...proposal, priceRange: { min, max }, orders }
     set({
-      proposal: {
-        ...proposal,
-        priceRange: { min, max },
-        orders,
-      },
+      proposal: updated,
+      validation: revalidate(updated, marketSnapshot),
     })
   },
 
   adjustTotalAmount: (amount) => {
-    const { proposal } = get()
+    const { proposal, marketSnapshot } = get()
     if (!proposal) return
 
     const side = proposal.orders[0]?.side ?? 'buy'
@@ -98,12 +106,10 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
       side,
     })
 
+    const updated = { ...proposal, totalCapitalRequired: amount, orders }
     set({
-      proposal: {
-        ...proposal,
-        totalCapitalRequired: amount,
-        orders,
-      },
+      proposal: updated,
+      validation: revalidate(updated, marketSnapshot),
     })
   },
 
@@ -111,6 +117,7 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
     set({
       proposal: null,
       validation: null,
+      marketSnapshot: null,
       isGenerating: false,
       error: null,
     })

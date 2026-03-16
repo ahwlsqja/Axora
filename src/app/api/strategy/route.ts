@@ -56,9 +56,10 @@ export async function POST(request: Request) {
 
     const proposal = result.output
 
-    // Inject market context that AI shouldn't generate
+    // Inject market context that AI shouldn't generate — never trust AI for these
     proposal.marketId = marketId
-    // baseDenom and quoteDenom could be set from market data if available
+    proposal.baseDenom = 'INJ'
+    proposal.quoteDenom = 'USDT'
 
     // Post-validate against market reality
     const validation = validateProposal(proposal, market)
@@ -66,11 +67,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       proposal,
       validation,
-      market: {
-        midPrice: market.midPrice,
-        bestBid: market.bestBid,
-        bestAsk: market.bestAsk,
-      },
+      market,
     })
   } catch (error: unknown) {
     if (error instanceof NoObjectGeneratedError) {
