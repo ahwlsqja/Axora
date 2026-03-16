@@ -1,6 +1,7 @@
 import { IndexerGrpcSpotApi } from '@injectivelabs/sdk-ts'
 import { getEndpoints } from '@/services/injective/network'
 import type { MarketSnapshot } from '@/lib/strategy/types'
+import type { ActiveOrder } from '@/lib/execution/types'
 
 /**
  * Supported spot markets for MVP.
@@ -158,6 +159,42 @@ export async function getSupportedMarkets(): Promise<
 
   cachedMarketMap = result
   return result
+}
+
+/**
+ * Fetch active (open) orders for a subaccount on a specific market.
+ * Filters to 'booked' and 'partial_filled' states only.
+ *
+ * @param subaccountId - Agent subaccount ID (nonce 1)
+ * @param marketId - Spot market ID
+ * @param baseDecimals - Base token decimals for price conversion
+ * @param quoteDecimals - Quote token decimals for price conversion
+ * @returns Array of active orders with human-readable prices
+ */
+export async function fetchActiveOrders(
+  subaccountId: string,
+  marketId: string,
+  baseDecimals: number,
+  quoteDecimals: number
+): Promise<ActiveOrder[]> {
+  const api = getSpotApi()
+  const { orders } = await api.fetchOrders({ subaccountId, marketId })
+
+  // Convert chain prices back to human-readable using the same scale as fetchMarketSnapshot
+  const priceScale = Math.pow(10, baseDecimals - quoteDecimals)
+
+  return orders
+    .filter((o) => o.state === 'booked' || o.state === 'partial_filled')
+    .map((o) => ({
+      orderHash: o.orderHash,
+      cid: o.cid ?? '',
+      marketId: o.marketId,
+      side: (o.orderSide === 'buy' ? 'buy' : 'sell') as 'buy' | 'sell',
+      price: Number(o.price) * priceScale,
+      quantity: Number(o.quantity),
+      unfilledQuantity: Number(o.unfilledQuantity),
+      state: o.state,
+    }))
 }
 
 /**
