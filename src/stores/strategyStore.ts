@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import type { StrategyProposal } from '@/lib/ai/schemas'
 import type { ValidationResult, MarketSnapshot } from '@/lib/strategy/types'
 import { recalculateOrders } from '@/lib/strategy/calculator'
@@ -30,7 +31,7 @@ function revalidate(proposal: StrategyProposal, market: MarketSnapshot | null): 
   return validateProposal(proposal, market)
 }
 
-export const useStrategyStore = create<StrategyState>((set, get) => ({
+export const useStrategyStore = create<StrategyState>()(subscribeWithSelector((set, get) => ({
   proposal: null,
   validation: null,
   marketSnapshot: null,
@@ -130,4 +131,4 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
       error: null,
     }))
   },
-}))
+})))

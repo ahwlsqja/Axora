@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import type { ExecutionPhase } from '@/lib/execution/types'
 
 interface ExecutionState {
@@ -17,7 +18,7 @@ interface ExecutionState {
   reset: () => void
 }
 
-export const useExecutionStore = create<ExecutionState>((set) => ({
+export const useExecutionStore = create<ExecutionState>()(subscribeWithSelector((set) => ({
   phase: 'idle',
   txHash: null,
   orderCids: [],
@@ -62,4 +63,4 @@ export const useExecutionStore = create<ExecutionState>((set) => ({
       marketId: null,
     })
   },
-}))
+})))

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import type { IntentSource } from '@/types'
 
 interface IntentState {
@@ -12,7 +13,7 @@ interface IntentState {
   clear: () => void
 }
 
-export const useIntentStore = create<IntentState>((set, get) => ({
+export const useIntentStore = create<IntentState>()(subscribeWithSelector((set, get) => ({
   selectedPresetId: null,
   freeText: '',
   source: null,
@@ -46,4 +47,4 @@ export const useIntentStore = create<IntentState>((set, get) => ({
       source: null,
     })
   },
-}))
+})))
