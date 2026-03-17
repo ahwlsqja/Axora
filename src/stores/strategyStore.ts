@@ -61,6 +61,9 @@ export const useStrategyStore = create<StrategyState>((set, get) => ({
     const { proposal, marketSnapshot } = get()
     if (!proposal) return
 
+    // Bracket has fixed split count of 3 (entry + TP + SL)
+    if (proposal.strategyType === 'bracket') return
+
     const side = proposal.orders[0]?.side ?? 'buy'
     const orders = recalculateOrders({
       strategyType: proposal.strategyType,

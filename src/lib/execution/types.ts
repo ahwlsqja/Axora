@@ -35,4 +35,5 @@ export interface GuardrailResult {
   canExecute: boolean
   availableBalance: number
   reason?: string
+  warnings?: string[]
 }

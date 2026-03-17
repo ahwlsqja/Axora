@@ -38,54 +38,100 @@ export async function validateExecution(
   const subaccountId = getAgentSubaccountId(injectiveAddress)
   const balances = await fetchSubaccountBalances(injectiveAddress)
 
-  const isSellStrategy = proposal.orders.length > 0 && proposal.orders[0].side === 'sell'
+  const buyOrders = proposal.orders.filter((o) => o.side === 'buy')
+  const sellOrders = proposal.orders.filter((o) => o.side === 'sell')
 
-  // Determine which denom and amount to check
-  // Convert display symbols to chain denoms for balance lookup
-  const checkDenom = symbolToChainDenom(isSellStrategy ? baseDenom : quoteDenom)
-  const checkDecimals = isSellStrategy ? baseDecimals : quoteDecimals
+  const warnings: string[] = []
 
-  // For sell: required amount = total base quantity to sell
-  // For buy: required amount = total quote capital needed
-  const requiredAmount = isSellStrategy
-    ? proposal.orders.reduce((sum, o) => sum + o.quantity, 0)
-    : proposal.totalCapitalRequired
+  // Helper: get available balance for a denom
+  const getAvailable = (denom: string, decimals: number): number => {
+    const chainDenom = symbolToChainDenom(denom)
+    const subBalance = balances.find(
+      (b) =>
+        b.subaccountId.toLowerCase() === subaccountId.toLowerCase() &&
+        b.denom === chainDenom
+    )
+    const availableWei = subBalance?.deposit?.availableBalance ?? '0'
+    return new BigNumberInBase(availableWei).toWei(-decimals).toNumber()
+  }
 
-  const denomLabel = isSellStrategy
-    ? proposal.baseDenom || 'base'
-    : proposal.quoteDenom || 'quote'
+  // Mixed buy+sell (bracket): validate buy side against quote balance
+  if (buyOrders.length > 0 && sellOrders.length > 0) {
+    const buyCapital = buyOrders.reduce((sum, o) => sum + o.price * o.quantity, 0)
+    const quoteAvailable = getAvailable(quoteDenom, quoteDecimals)
+    const quoteLabel = proposal.quoteDenom || 'quote'
 
-  // Find the balance entry matching our agent subaccount and the relevant denom
-  const subBalance = balances.find(
-    (b) =>
-      b.subaccountId.toLowerCase() === subaccountId.toLowerCase() &&
-      b.denom === checkDenom
-  )
+    if (buyCapital > quoteAvailable) {
+      return {
+        canExecute: false,
+        availableBalance: quoteAvailable,
+        reason: `Insufficient ${quoteLabel} balance for entry: need ${buyCapital.toFixed(4)} but only ${quoteAvailable.toFixed(4)} available`,
+      }
+    }
 
-  // Convert available balance from wei
-  const availableWei = subBalance?.deposit?.availableBalance ?? '0'
-  const available = new BigNumberInBase(availableWei)
-    .toWei(-checkDecimals)
-    .toNumber()
+    const maxAllowed = quoteAvailable * 0.3
+    if (buyCapital > maxAllowed) {
+      return {
+        canExecute: false,
+        availableBalance: quoteAvailable,
+        reason: `Exceeds 30% capital limit: entry needs ${buyCapital.toFixed(4)} ${quoteLabel} but max allowed is ${maxAllowed.toFixed(4)} (30% of ${quoteAvailable.toFixed(4)})`,
+      }
+    }
 
-  // Check 1: Absolute balance check
-  if (requiredAmount > available) {
+    warnings.push(
+      'Bracket order: sell orders (TP/SL) are placed simultaneously. They require base token balance if entry buy has not filled yet.'
+    )
+
+    return { canExecute: true, availableBalance: quoteAvailable, warnings }
+  }
+
+  // Sell-only strategy
+  if (sellOrders.length > 0 && buyOrders.length === 0) {
+    const totalSellQuantity = sellOrders.reduce((sum, o) => sum + o.quantity, 0)
+    const baseAvailable = getAvailable(baseDenom, baseDecimals)
+    const baseLabel = proposal.baseDenom || 'base'
+
+    if (totalSellQuantity > baseAvailable) {
+      return {
+        canExecute: false,
+        availableBalance: baseAvailable,
+        reason: `Insufficient ${baseLabel} balance: need ${totalSellQuantity.toFixed(4)} but only ${baseAvailable.toFixed(4)} available`,
+      }
+    }
+
+    const maxAllowed = baseAvailable * 0.3
+    if (totalSellQuantity > maxAllowed) {
+      return {
+        canExecute: false,
+        availableBalance: baseAvailable,
+        reason: `Exceeds 30% capital limit: strategy needs ${totalSellQuantity.toFixed(4)} ${baseLabel} but max allowed is ${maxAllowed.toFixed(4)} (30% of ${baseAvailable.toFixed(4)})`,
+      }
+    }
+
+    return { canExecute: true, availableBalance: baseAvailable }
+  }
+
+  // Buy-only strategy (default)
+  const requiredAmount = proposal.totalCapitalRequired
+  const quoteAvailable = getAvailable(quoteDenom, quoteDecimals)
+  const quoteLabel = proposal.quoteDenom || 'quote'
+
+  if (requiredAmount > quoteAvailable) {
     return {
       canExecute: false,
-      availableBalance: available,
-      reason: `Insufficient ${denomLabel} balance: need ${requiredAmount.toFixed(4)} but only ${available.toFixed(4)} available`,
+      availableBalance: quoteAvailable,
+      reason: `Insufficient ${quoteLabel} balance: need ${requiredAmount.toFixed(4)} but only ${quoteAvailable.toFixed(4)} available`,
     }
   }
 
-  // Check 2: 30% capital concentration cap
-  const maxAllowed = available * 0.3
+  const maxAllowed = quoteAvailable * 0.3
   if (requiredAmount > maxAllowed) {
     return {
       canExecute: false,
-      availableBalance: available,
-      reason: `Exceeds 30% capital limit: strategy needs ${requiredAmount.toFixed(4)} ${denomLabel} but max allowed is ${maxAllowed.toFixed(4)} (30% of ${available.toFixed(4)})`,
+      availableBalance: quoteAvailable,
+      reason: `Exceeds 30% capital limit: strategy needs ${requiredAmount.toFixed(4)} ${quoteLabel} but max allowed is ${maxAllowed.toFixed(4)} (30% of ${quoteAvailable.toFixed(4)})`,
     }
   }
 
-  return { canExecute: true, availableBalance: available }
+  return { canExecute: true, availableBalance: quoteAvailable }
 }
