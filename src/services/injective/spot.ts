@@ -2,6 +2,7 @@ import { IndexerGrpcSpotApi } from '@injectivelabs/sdk-ts'
 import { getEndpoints } from '@/services/injective/network'
 import type { MarketSnapshot } from '@/lib/strategy/types'
 import type { ActiveOrder } from '@/lib/execution/types'
+import type { OrderHistoryEntry } from '@/lib/monitoring/types'
 
 /**
  * Supported spot markets for MVP.
@@ -203,4 +204,82 @@ export async function fetchActiveOrders(
  */
 export function getMarketSymbols(marketId: string): { baseSymbol: string; quoteSymbol: string } {
   return cachedMarketMeta?.[marketId] ?? { baseSymbol: 'UNKNOWN', quoteSymbol: 'UNKNOWN' }
+}
+
+/**
+ * Fetch order history for a subaccount on a specific market.
+ * Returns all orders (booked, filled, cancelled) with human-readable prices.
+ *
+ * @param subaccountId - Agent subaccount ID (nonce 1)
+ * @param marketId - Spot market ID
+ * @param baseDecimals - Base token decimals for price conversion
+ * @param quoteDecimals - Quote token decimals for price conversion
+ * @returns Array of order history entries with human-readable values
+ */
+export async function fetchOrderHistory(
+  subaccountId: string,
+  marketId: string,
+  baseDecimals: number,
+  quoteDecimals: number
+): Promise<OrderHistoryEntry[]> {
+  const api = getSpotApi()
+  const { orderHistory } = await api.fetchOrderHistory({ subaccountId, marketId })
+
+  const priceScale = Math.pow(10, baseDecimals - quoteDecimals)
+
+  return orderHistory.map((o) => ({
+    orderHash: o.orderHash,
+    cid: o.cid ?? '',
+    marketId: o.marketId,
+    direction: (o.direction === 'buy' ? 'buy' : 'sell') as 'buy' | 'sell',
+    price: Number(o.price) * priceScale,
+    quantity: Number(o.quantity),
+    filledQuantity: Number(o.filledQuantity),
+    state: o.state,
+    createdAt: o.createdAt,
+    updatedAt: o.updatedAt,
+  }))
+}
+
+/**
+ * Fetch trades for specific CIDs on a market.
+ * Returns trade fills with human-readable prices and fees.
+ *
+ * @param subaccountId - Agent subaccount ID (nonce 1)
+ * @param marketId - Spot market ID
+ * @param cids - Array of order CIDs to filter by
+ * @param baseDecimals - Base token decimals for price conversion
+ * @param quoteDecimals - Quote token decimals for fee conversion
+ * @returns Array of converted trade data
+ */
+export async function fetchTradesByCid(
+  subaccountId: string,
+  marketId: string,
+  cids: string[],
+  baseDecimals: number,
+  quoteDecimals: number
+): Promise<Array<{
+  price: number
+  quantity: number
+  fee: number
+  tradeDirection: string
+  cid: string
+  executedAt: number
+}>> {
+  const api = getSpotApi()
+  const { trades } = await api.fetchTrades({ subaccountId, marketId })
+
+  const cidSet = new Set(cids)
+  const priceScale = Math.pow(10, baseDecimals - quoteDecimals)
+
+  return trades
+    .filter((t) => cidSet.has(t.cid))
+    .map((t) => ({
+      price: Number(t.price) * priceScale,
+      quantity: Number(t.quantity),
+      fee: Number(t.fee) / Math.pow(10, quoteDecimals),
+      tradeDirection: t.tradeDirection,
+      cid: t.cid,
+      executedAt: t.executedAt,
+    }))
 }
