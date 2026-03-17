@@ -10,6 +10,8 @@ import { analytics } from './index'
 import { useIntentStore } from '@/stores/intentStore'
 import { useStrategyStore } from '@/stores/strategyStore'
 import { useExecutionStore } from '@/stores/executionStore'
+import { useWalletStore } from '@/stores/walletStore'
+import { useOnboardingStore } from '@/stores/onboardingStore'
 
 export function initAnalyticsSubscriptions(): () => void {
   const unsubscribers: (() => void)[] = []
@@ -179,6 +181,100 @@ export function initAnalyticsSubscriptions(): () => void {
         prevPriceMin = proposal.priceRange.min
         prevPriceMax = proposal.priceRange.max
         prevTotalAmount = proposal.totalCapitalRequired
+      },
+    ),
+  )
+
+  // -------------------------------------------------------------------------
+  // KPI-05 prerequisite: wallet_connected
+  // -------------------------------------------------------------------------
+  unsubscribers.push(
+    useWalletStore.subscribe(
+      (state) => state.status,
+      (status) => {
+        if (status === 'connected') {
+          const { walletType, address } = useWalletStore.getState()
+          analytics.track({
+            name: 'wallet_connected',
+            properties: {
+              walletType: walletType?.toString() ?? 'unknown',
+            },
+          })
+
+          if (address) {
+            // Store first_seen_at in localStorage for first_execution delta
+            if (!localStorage.getItem('axora_first_seen')) {
+              localStorage.setItem('axora_first_seen', new Date().toISOString())
+            }
+            analytics.identify(address, {
+              $set_once: { first_seen_at: new Date().toISOString() },
+            })
+          }
+        }
+      },
+    ),
+  )
+
+  // -------------------------------------------------------------------------
+  // wallet_disconnected
+  // -------------------------------------------------------------------------
+  unsubscribers.push(
+    useWalletStore.subscribe(
+      (state) => state.status,
+      (status, prevStatus) => {
+        if (status === 'disconnected' && prevStatus === 'connected') {
+          analytics.track({
+            name: 'wallet_disconnected',
+            properties: {},
+          })
+          analytics.reset()
+        }
+      },
+    ),
+  )
+
+  // -------------------------------------------------------------------------
+  // KPI-04: onboarding_completed + delegation_granted
+  // -------------------------------------------------------------------------
+  unsubscribers.push(
+    useOnboardingStore.subscribe(
+      (state) => state.txHash,
+      (txHash, prevTxHash) => {
+        if (prevTxHash === null && txHash !== null) {
+          const { depositAmount } = useOnboardingStore.getState()
+          analytics.track({
+            name: 'onboarding_completed',
+            properties: { depositAmount, txHash },
+          })
+          analytics.track({
+            name: 'delegation_granted',
+            properties: { depositAmount },
+          })
+        }
+      },
+    ),
+  )
+
+  // -------------------------------------------------------------------------
+  // KPI-05: first_execution (first strategy execution per user)
+  // -------------------------------------------------------------------------
+  unsubscribers.push(
+    useExecutionStore.subscribe(
+      (state) => state.phase,
+      (phase) => {
+        if (phase === 'success') {
+          if (typeof window !== 'undefined' && !localStorage.getItem('axora_first_exec_tracked')) {
+            const firstSeen = localStorage.getItem('axora_first_seen')
+            const timeSinceFirstSeenMs = firstSeen
+              ? Date.now() - new Date(firstSeen).getTime()
+              : 0
+            analytics.track({
+              name: 'first_execution',
+              properties: { timeSinceFirstSeenMs },
+            })
+            localStorage.setItem('axora_first_exec_tracked', 'true')
+          }
+        }
       },
     ),
   )

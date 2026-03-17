@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import type { OnboardingStep } from '@/types'
 
 const STEP_ORDER: OnboardingStep[] = ['connect', 'explain', 'deposit']
@@ -21,7 +22,7 @@ interface OnboardingState {
   reset: () => void
 }
 
-export const useOnboardingStore = create<OnboardingState>((set, get) => ({
+export const useOnboardingStore = create<OnboardingState>()(subscribeWithSelector((set, get) => ({
   currentStep: 'connect',
   depositAmount: DEFAULT_DEPOSIT_AMOUNT,
   isExecuting: false,
@@ -59,4 +60,4 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
       txHash: null,
       error: null,
     }),
-}))
+})))

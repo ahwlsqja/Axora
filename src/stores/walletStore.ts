@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 import { Wallet } from '@injectivelabs/wallet-base'
 import { toast } from 'sonner'
 import type { ConnectionStatus } from '@/types'
@@ -18,7 +19,7 @@ interface WalletState {
   tryReconnect: () => Promise<void>
 }
 
-export const useWalletStore = create<WalletState>((set, get) => ({
+export const useWalletStore = create<WalletState>()(subscribeWithSelector((set, get) => ({
   address: null,
   walletType: null,
   status: 'disconnected',
@@ -65,4 +66,4 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       }
     }
   },
-}))
+})))
