@@ -63,12 +63,13 @@ export function initAnalyticsSubscriptions(): () => void {
 
   // -------------------------------------------------------------------------
   // KPI-02 Step 3: execution_confirmed
+  // Fires on 'signing' (user actually confirmed), not 'confirming' (dialog opened).
   // -------------------------------------------------------------------------
   unsubscribers.push(
     useExecutionStore.subscribe(
       (state) => state.phase,
       (phase) => {
-        if (phase === 'confirming') {
+        if (phase === 'signing') {
           const { proposalId, marketId } = useExecutionStore.getState()
           const strategyType = useStrategyStore.getState().proposal?.strategyType ?? 'unknown'
           analytics.track({
@@ -133,7 +134,10 @@ export function initAnalyticsSubscriptions(): () => void {
 
   // -------------------------------------------------------------------------
   // strategy_adjusted — track parameter changes on the proposal
+  // Tracks proposalId to reset baseline when a new proposal is generated,
+  // preventing false adjustment events from proposal-to-proposal differences.
   // -------------------------------------------------------------------------
+  let prevProposalId: number | null = null
   let prevSplitCount: number | null = null
   let prevPriceMin: number | null = null
   let prevPriceMax: number | null = null
@@ -144,11 +148,23 @@ export function initAnalyticsSubscriptions(): () => void {
       (state) => state.proposal,
       (proposal) => {
         if (!proposal) {
-          // Reset tracking when proposal is cleared
+          prevProposalId = null
           prevSplitCount = null
           prevPriceMin = null
           prevPriceMax = null
           prevTotalAmount = null
+          return
+        }
+
+        const currentProposalId = useStrategyStore.getState().proposalId
+
+        // New proposal — set baseline without firing events
+        if (currentProposalId !== prevProposalId) {
+          prevProposalId = currentProposalId
+          prevSplitCount = proposal.splitCount
+          prevPriceMin = proposal.priceRange.min
+          prevPriceMax = proposal.priceRange.max
+          prevTotalAmount = proposal.totalCapitalRequired
           return
         }
 
@@ -202,9 +218,10 @@ export function initAnalyticsSubscriptions(): () => void {
           })
 
           if (address) {
-            // Store first_seen_at in localStorage for first_execution delta
-            if (!localStorage.getItem('axora_first_seen')) {
-              localStorage.setItem('axora_first_seen', new Date().toISOString())
+            // Store first_seen_at in localStorage keyed by address
+            const firstSeenKey = `axora_first_seen_${address}`
+            if (!localStorage.getItem(firstSeenKey)) {
+              localStorage.setItem(firstSeenKey, new Date().toISOString())
             }
             analytics.identify(address, {
               $set_once: { first_seen_at: new Date().toISOString() },
@@ -257,22 +274,28 @@ export function initAnalyticsSubscriptions(): () => void {
 
   // -------------------------------------------------------------------------
   // KPI-05: first_execution (first strategy execution per user)
+  // Keys are scoped by wallet address so multiple wallets on the same browser
+  // each get independent first-execution tracking.
   // -------------------------------------------------------------------------
   unsubscribers.push(
     useExecutionStore.subscribe(
       (state) => state.phase,
       (phase) => {
         if (phase === 'success') {
-          if (typeof window !== 'undefined' && !localStorage.getItem('axora_first_exec_tracked')) {
-            const firstSeen = localStorage.getItem('axora_first_seen')
-            const timeSinceFirstSeenMs = firstSeen
-              ? Date.now() - new Date(firstSeen).getTime()
-              : 0
-            analytics.track({
-              name: 'first_execution',
-              properties: { timeSinceFirstSeenMs },
-            })
-            localStorage.setItem('axora_first_exec_tracked', 'true')
+          const address = useWalletStore.getState().address
+          if (typeof window !== 'undefined' && address) {
+            const trackedKey = `axora_first_exec_tracked_${address}`
+            if (!localStorage.getItem(trackedKey)) {
+              const firstSeen = localStorage.getItem(`axora_first_seen_${address}`)
+              const timeSinceFirstSeenMs = firstSeen
+                ? Date.now() - new Date(firstSeen).getTime()
+                : 0
+              analytics.track({
+                name: 'first_execution',
+                properties: { timeSinceFirstSeenMs },
+              })
+              localStorage.setItem(trackedKey, 'true')
+            }
           }
         }
       },
