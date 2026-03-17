@@ -108,7 +108,7 @@ export function useExecution() {
       }
 
       try {
-        useExecutionStore.getState().startSigning()
+        useExecutionStore.getState().startCancellation(marketId)
 
         const txHash = await cancelOrdersService(
           orderHashes,

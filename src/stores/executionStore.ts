@@ -1,9 +1,10 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import type { ExecutionPhase } from '@/lib/execution/types'
+import type { ExecutionPhase, ExecutionAction } from '@/lib/execution/types'
 
 interface ExecutionState {
   phase: ExecutionPhase
+  actionType: ExecutionAction
   txHash: string | null
   orderCids: string[]
   error: string | null
@@ -11,6 +12,7 @@ interface ExecutionState {
   marketId: string | null
 
   startConfirmation: (proposalId: number, marketId: string) => void
+  startCancellation: (marketId: string) => void
   startSigning: () => void
   startBroadcasting: () => void
   setSuccess: (txHash: string, orderCids: string[]) => void
@@ -20,6 +22,7 @@ interface ExecutionState {
 
 export const useExecutionStore = create<ExecutionState>()(subscribeWithSelector((set) => ({
   phase: 'idle',
+  actionType: 'execute',
   txHash: null,
   orderCids: [],
   error: null,
@@ -29,11 +32,24 @@ export const useExecutionStore = create<ExecutionState>()(subscribeWithSelector(
   startConfirmation: (proposalId, marketId) => {
     set({
       phase: 'confirming',
+      actionType: 'execute',
       proposalId,
       marketId,
       txHash: null,
       orderCids: [],
       error: null,
+    })
+  },
+
+  startCancellation: (marketId) => {
+    set({
+      phase: 'signing',
+      actionType: 'cancel',
+      marketId,
+      txHash: null,
+      orderCids: [],
+      error: null,
+      proposalId: null,
     })
   },
 
@@ -56,6 +72,7 @@ export const useExecutionStore = create<ExecutionState>()(subscribeWithSelector(
   reset: () => {
     set({
       phase: 'idle',
+      actionType: 'execute',
       txHash: null,
       orderCids: [],
       error: null,

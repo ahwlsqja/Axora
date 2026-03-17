@@ -11,6 +11,9 @@ export type ExecutionPhase =
   | 'success'
   | 'error'
 
+/** What kind of transaction the execution store is processing */
+export type ExecutionAction = 'execute' | 'cancel'
+
 /** Result of a successful strategy execution broadcast */
 export interface ExecutionResult {
   txHash: string

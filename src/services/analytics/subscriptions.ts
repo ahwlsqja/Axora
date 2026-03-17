@@ -64,13 +64,15 @@ export function initAnalyticsSubscriptions(): () => void {
   // -------------------------------------------------------------------------
   // KPI-02 Step 3: execution_confirmed
   // Fires on 'signing' (user actually confirmed), not 'confirming' (dialog opened).
+  // Only tracks strategy executions, not order cancellations.
   // -------------------------------------------------------------------------
   unsubscribers.push(
     useExecutionStore.subscribe(
       (state) => state.phase,
       (phase) => {
         if (phase === 'signing') {
-          const { proposalId, marketId } = useExecutionStore.getState()
+          const { proposalId, marketId, actionType } = useExecutionStore.getState()
+          if (actionType !== 'execute') return
           const strategyType = useStrategyStore.getState().proposal?.strategyType ?? 'unknown'
           analytics.track({
             name: 'execution_confirmed',
@@ -87,13 +89,15 @@ export function initAnalyticsSubscriptions(): () => void {
 
   // -------------------------------------------------------------------------
   // KPI-02 Step 4 + KPI-01: tx_confirmed
+  // Only tracks strategy executions, not order cancellations.
   // -------------------------------------------------------------------------
   unsubscribers.push(
     useExecutionStore.subscribe(
       (state) => state.phase,
       (phase) => {
         if (phase === 'success') {
-          const { txHash, orderCids, marketId } = useExecutionStore.getState()
+          const { txHash, orderCids, marketId, actionType } = useExecutionStore.getState()
+          if (actionType !== 'execute') return
           const strategyType = useStrategyStore.getState().proposal?.strategyType ?? 'unknown'
           analytics.track({
             name: 'tx_confirmed',
@@ -110,14 +114,15 @@ export function initAnalyticsSubscriptions(): () => void {
   )
 
   // -------------------------------------------------------------------------
-  // tx_failed
+  // tx_failed — only tracks strategy execution failures, not cancellation failures.
   // -------------------------------------------------------------------------
   unsubscribers.push(
     useExecutionStore.subscribe(
       (state) => state.phase,
       (phase) => {
         if (phase === 'error') {
-          const { error, marketId } = useExecutionStore.getState()
+          const { error, marketId, actionType } = useExecutionStore.getState()
+          if (actionType !== 'execute') return
           const strategyType = useStrategyStore.getState().proposal?.strategyType ?? 'unknown'
           analytics.track({
             name: 'tx_failed',
@@ -282,6 +287,8 @@ export function initAnalyticsSubscriptions(): () => void {
       (state) => state.phase,
       (phase) => {
         if (phase === 'success') {
+          const { actionType } = useExecutionStore.getState()
+          if (actionType !== 'execute') return
           const address = useWalletStore.getState().address
           if (typeof window !== 'undefined' && address) {
             const trackedKey = `axora_first_exec_tracked_${address}`
