@@ -9,9 +9,10 @@ export async function GET() {
 
     return NextResponse.json({ markets })
   } catch (error: unknown) {
-    console.error('Supported markets fetch error:', error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('Supported markets fetch error:', message)
     return NextResponse.json(
-      { error: 'Failed to fetch supported markets' },
+      { error: 'Failed to fetch supported markets', detail: message },
       { status: 500 }
     )
   }
