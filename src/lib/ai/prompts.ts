@@ -85,7 +85,15 @@ RULES:
 7. Do NOT generate marketId, baseDenom, or quoteDenom values -- they will be injected by the system. Use empty strings for these fields.
 8. The sum of all order percentOfTotal values should equal approximately 100.
 9. totalCapitalRequired should approximately equal the sum of (price * quantity) for buy orders, or represent the value of assets being sold for sell orders.
-10. priceRange.min should be the lowest order price, priceRange.max should be the highest.`
+10. priceRange.min should be the lowest order price, priceRange.max should be the highest.
+
+OPTIMIZATION GUIDANCE:
+- Order spacing should be at least 2x the current spread (${spreadPercent}%) to avoid clustering near the same price.
+- For strategies with ${market.orderbookDepth.bids} bids and ${market.orderbookDepth.asks} asks visible, keep individual order sizes reasonable relative to visible depth.
+- When spread is wide (>1%), use wider price intervals between orders. When tight (<0.3%), intervals can be narrower.
+- For buy strategies (DCA, scale-in, limit-buy), concentrate more capital at lower prices for a better average entry.
+- For bracket orders, ensure the risk-reward ratio is at least 1.5:1 (take-profit distance from entry >= 1.5x stop-loss distance from entry).
+- Consider the visible orderbook depth when sizing: avoid placing orders larger than ~10% of visible depth at that price level.`
 }
 
 /**
