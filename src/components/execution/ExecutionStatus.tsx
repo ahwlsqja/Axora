@@ -6,6 +6,7 @@ interface ExecutionStatusProps {
   phase: ExecutionPhase
   txHash: string | null
   error: string | null
+  warnings: string[]
   onReset: () => void
 }
 
@@ -19,15 +20,27 @@ export function ExecutionStatus({
   phase,
   txHash,
   error,
+  warnings,
   onReset,
 }: ExecutionStatusProps) {
+  const warningBlock = warnings.length > 0 && (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mt-2">
+      {warnings.map((w, i) => (
+        <p key={i} className="text-xs text-amber-700">{w}</p>
+      ))}
+    </div>
+  )
+
   if (phase === 'signing') {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
-        <Spinner />
-        <p className="text-sm font-medium text-blue-700">
-          지갑 서명 대기 중... (Waiting for wallet signature...)
-        </p>
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+        <div className="flex items-center gap-3">
+          <Spinner />
+          <p className="text-sm font-medium text-blue-700">
+            지갑 서명 대기 중... (Waiting for wallet signature...)
+          </p>
+        </div>
+        {warningBlock}
       </div>
     )
   }

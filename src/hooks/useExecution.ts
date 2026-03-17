@@ -59,6 +59,11 @@ export function useExecution() {
         return
       }
 
+      // Store guardrail warnings for UI display (e.g., bracket non-conditional notice)
+      if (guardrail.warnings && guardrail.warnings.length > 0) {
+        useExecutionStore.getState().setWarnings(guardrail.warnings)
+      }
+
       // Transition to signing -- user sees "Waiting for wallet signature..."
       useExecutionStore.getState().startSigning()
 

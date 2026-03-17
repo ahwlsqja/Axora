@@ -8,6 +8,7 @@ interface ExecutionState {
   txHash: string | null
   orderCids: string[]
   error: string | null
+  warnings: string[]
   proposalId: number | null
   marketId: string | null
 
@@ -17,6 +18,7 @@ interface ExecutionState {
   startBroadcasting: () => void
   setSuccess: (txHash: string, orderCids: string[]) => void
   setError: (error: string) => void
+  setWarnings: (warnings: string[]) => void
   reset: () => void
 }
 
@@ -26,6 +28,7 @@ export const useExecutionStore = create<ExecutionState>()(subscribeWithSelector(
   txHash: null,
   orderCids: [],
   error: null,
+  warnings: [],
   proposalId: null,
   marketId: null,
 
@@ -69,6 +72,10 @@ export const useExecutionStore = create<ExecutionState>()(subscribeWithSelector(
     set({ phase: 'error', error })
   },
 
+  setWarnings: (warnings) => {
+    set({ warnings })
+  },
+
   reset: () => {
     set({
       phase: 'idle',
@@ -76,6 +83,7 @@ export const useExecutionStore = create<ExecutionState>()(subscribeWithSelector(
       txHash: null,
       orderCids: [],
       error: null,
+      warnings: [],
       proposalId: null,
       marketId: null,
     })

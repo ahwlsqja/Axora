@@ -195,6 +195,7 @@ export function ProposalCard() {
           phase={phase}
           txHash={txHash}
           error={executionError}
+          warnings={useExecutionStore((s) => s.warnings)}
           onReset={resetExec}
         />
       )}

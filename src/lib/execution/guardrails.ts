@@ -78,8 +78,21 @@ export async function validateExecution(
       }
     }
 
+    // Bracket sell orders are non-conditional — they need base token balance NOW
+    const totalSellQuantity = sellOrders.reduce((sum, o) => sum + o.quantity, 0)
+    const baseAvailable = getAvailable(baseDenom, baseDecimals)
+    const baseLabel = proposal.baseDenom || 'base'
+
+    if (totalSellQuantity > baseAvailable) {
+      return {
+        canExecute: false,
+        availableBalance: quoteAvailable,
+        reason: `Insufficient ${baseLabel} for TP/SL sells: need ${totalSellQuantity.toFixed(4)} but only ${baseAvailable.toFixed(4)} available. Bracket orders place all orders simultaneously — you need base tokens for the sell legs.`,
+      }
+    }
+
     warnings.push(
-      'Bracket order: sell orders (TP/SL) are placed simultaneously. They require base token balance if entry buy has not filled yet.'
+      'Bracket order: TP/SL sell orders are placed simultaneously with entry buy. All orders are live immediately.'
     )
 
     return { canExecute: true, availableBalance: quoteAvailable, warnings }
