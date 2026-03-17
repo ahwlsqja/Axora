@@ -40,6 +40,22 @@ Place buy orders evenly distributed across a price range below the current marke
 All orders should have EQUAL capital allocation (like DCA but within a defined range).
 The range should span a meaningful price band (e.g., 5-20% below current price).
 Space orders evenly between the range minimum and maximum.`,
+
+  'bracket': `Generate a bracket order strategy.
+Create exactly 3 orders:
+1. A BUY order at the entry price (below current market price for a limit entry)
+2. A SELL order at the take-profit price (above entry price)
+3. A SELL order at the stop-loss price (below entry price)
+
+The entry order gets 100% capital allocation (percentOfTotal = 100).
+The take-profit and stop-loss orders get 0% allocation (they sell the acquired base tokens).
+All three orders should have the SAME quantity (base amount from entry).
+
+Typical bracket: entry 3-5% below market, take-profit 5-15% above entry, stop-loss 3-8% below entry.
+Risk-reward ratio should be at least 1.5:1 (TP distance >= 1.5x SL distance).
+
+IMPORTANT: priceRange.min = stop-loss price, priceRange.max = take-profit price.
+splitCount must be 3.`,
 }
 
 /**

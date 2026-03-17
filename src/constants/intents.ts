@@ -65,4 +65,13 @@ export const PRESET_INTENTS: PresetIntent[] = [
     icon: '📊',
     category: 'accumulate',
   },
+  {
+    id: 'bracket',
+    titleKo: '브래킷 주문',
+    titleEn: 'Bracket Order',
+    descriptionKo: '진입가, 익절가, 손절가를 한 번에 설정합니다',
+    descriptionEn: 'Set entry, take-profit, and stop-loss in one go',
+    icon: '🔗',
+    category: 'entry',
+  },
 ]

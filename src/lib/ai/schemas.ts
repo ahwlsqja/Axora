@@ -42,6 +42,7 @@ export const strategyProposalSchema = z.object({
       'take-profit',
       'limit-buy',
       'range-accumulate',
+      'bracket',
     ])
     .describe(
       'The type of trading strategy. Must match one of the supported preset types.'

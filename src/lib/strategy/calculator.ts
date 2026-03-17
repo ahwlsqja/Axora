@@ -28,6 +28,8 @@ export function recalculateOrders(params: RecalculateParams): StrategyOrder[] {
       return buildWeightedOrders(priceRange, splitCount, totalAmount, side)
     case 'take-profit':
       return buildEvenOrders(priceRange, splitCount, totalAmount, side)
+    case 'bracket':
+      return buildBracketOrders(priceRange, totalAmount)
     case 'dca':
     case 'limit-buy':
     case 'range-accumulate':
@@ -133,6 +135,40 @@ function buildWeightedOrders(
   }
 
   return orders
+}
+
+/**
+ * Bracket order: 1 buy entry + 1 sell take-profit + 1 sell stop-loss.
+ * Entry price = midpoint of range. priceRange.min = stop-loss, priceRange.max = take-profit.
+ * totalAmount is quote currency for the entry buy order.
+ */
+function buildBracketOrders(
+  priceRange: { min: number; max: number },
+  totalAmount: number
+): StrategyOrder[] {
+  const entryPrice = (priceRange.min + priceRange.max) / 2
+  const baseQuantity = totalAmount / entryPrice
+
+  return [
+    {
+      side: 'buy',
+      price: roundPrice(entryPrice),
+      quantity: roundQuantity(baseQuantity),
+      percentOfTotal: 100,
+    },
+    {
+      side: 'sell',
+      price: roundPrice(priceRange.max),
+      quantity: roundQuantity(baseQuantity),
+      percentOfTotal: 0,
+    },
+    {
+      side: 'sell',
+      price: roundPrice(priceRange.min),
+      quantity: roundQuantity(baseQuantity),
+      percentOfTotal: 0,
+    },
+  ]
 }
 
 function roundPrice(value: number): number {
