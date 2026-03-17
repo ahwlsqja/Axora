@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useStrategyStore } from '@/stores/strategyStore'
 import { useExecutionStore } from '@/stores/executionStore'
 import { useExecution } from '@/hooks/useExecution'
@@ -9,6 +10,7 @@ import { RiskWarning } from './RiskWarning'
 import { ConfirmationDialog } from '@/components/execution/ConfirmationDialog'
 import { ExecutionStatus } from '@/components/execution/ExecutionStatus'
 import { ActiveOrders } from '@/components/execution/ActiveOrders'
+import { MonitoringPanel } from '@/components/monitoring/MonitoringPanel'
 
 const STRATEGY_LABELS: Record<string, { ko: string; en: string; color: string }> = {
   dca: { ko: '분할매수', en: 'DCA', color: 'bg-blue-100 text-blue-700' },
@@ -42,6 +44,7 @@ export function ProposalCard() {
   const resetExecution = useExecutionStore((s) => s.reset)
 
   const { execute, phase, txHash, error: executionError, reset: resetExec } = useExecution()
+  const [showMonitor, setShowMonitor] = useState(false)
 
   if (isGenerating) {
     return (
@@ -220,6 +223,20 @@ export function ProposalCard() {
           quoteDecimals={quoteDecimals}
         />
       )}
+
+      {/* Strategy Monitor Toggle */}
+      {phase === 'success' && !showMonitor && (
+        <button
+          type="button"
+          onClick={() => setShowMonitor(true)}
+          className="w-full rounded-xl border border-blue-200 bg-blue-50 py-2.5 text-sm font-medium text-blue-700 hover:bg-blue-100 transition"
+        >
+          Strategy Monitor
+        </button>
+      )}
+
+      {/* Monitoring Panel */}
+      {showMonitor && <MonitoringPanel />}
 
       {/* Confirmation Dialog */}
       <ConfirmationDialog

@@ -3,7 +3,9 @@
 import { useCallback } from 'react'
 import { useExecutionStore } from '@/stores/executionStore'
 import { useWalletStore } from '@/stores/walletStore'
+import { useExecutionHistoryStore } from '@/stores/executionHistoryStore'
 import { validateExecution } from '@/lib/execution/guardrails'
+import { getStrategyPrefix } from '@/lib/monitoring/statusResolver'
 import {
   executeStrategy,
   cancelOrders as cancelOrdersService,
@@ -74,6 +76,20 @@ export function useExecution() {
         )
 
         useExecutionStore.getState().setSuccess(result.txHash, result.orderCids)
+
+        // Record execution in persistent history
+        const strategyPrefix = getStrategyPrefix(result.orderCids[0])
+        useExecutionHistoryStore.getState().addRecord({
+          id: strategyPrefix,
+          txHash: result.txHash,
+          marketId: proposal.marketId,
+          strategyType: proposal.strategyType,
+          orderCids: result.orderCids,
+          totalCapital: proposal.totalCapitalRequired,
+          createdAt: Date.now(),
+          status: 'syncing',
+          walletAddress: wallet.address,
+        })
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Execution failed'
         useExecutionStore.getState().setError(message)
