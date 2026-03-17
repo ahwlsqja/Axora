@@ -90,7 +90,7 @@ export function ProposalCard() {
   }
 
   const handleConfirm = () => {
-    execute(proposal, baseDecimals, quoteDecimals, proposal.quoteDenom)
+    execute(proposal, baseDecimals, quoteDecimals, proposal.quoteDenom, proposal.baseDenom)
   }
 
   const handleCancel = () => {

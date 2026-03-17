@@ -28,7 +28,8 @@ export function useExecution() {
       proposal: StrategyProposal,
       baseDecimals: number,
       quoteDecimals: number,
-      quoteDenom: string
+      quoteDenom: string,
+      baseDenom: string
     ) => {
       const store = useExecutionStore.getState()
       const wallet = useWalletStore.getState()
@@ -41,12 +42,14 @@ export function useExecution() {
         return
       }
 
-      // Run guardrail checks
+      // Run guardrail checks (buy checks quote balance, sell checks base balance)
       const guardrail = await validateExecution(
         wallet.address,
-        proposal.totalCapitalRequired,
+        proposal,
         quoteDenom,
-        quoteDecimals
+        quoteDecimals,
+        baseDenom,
+        baseDecimals
       )
 
       if (!guardrail.canExecute) {
