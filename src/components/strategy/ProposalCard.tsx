@@ -21,6 +21,11 @@ const STRATEGY_LABELS: Record<string, { ko: string; en: string; color: string }>
     en: 'Range Accumulate',
     color: 'bg-cyan-100 text-cyan-700',
   },
+  bracket: {
+    ko: '브래킷 주문',
+    en: 'Bracket',
+    color: 'bg-indigo-100 text-indigo-700',
+  },
 }
 
 export function ProposalCard() {
@@ -120,8 +125,12 @@ export function ProposalCard() {
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-500">분할 수 (Splits)</p>
-          <p className="text-sm font-semibold text-gray-800">{proposal.splitCount}</p>
+          <p className="text-xs text-gray-500">
+            {proposal.strategyType === 'bracket' ? '구성 (Structure)' : '분할 수 (Splits)'}
+          </p>
+          <p className="text-sm font-semibold text-gray-800">
+            {proposal.strategyType === 'bracket' ? 'Entry + TP + SL' : proposal.splitCount}
+          </p>
         </div>
         <div>
           <p className="text-xs text-gray-500">가격 범위 (Range)</p>
@@ -143,6 +152,25 @@ export function ProposalCard() {
         baseDenom={proposal.baseDenom.toUpperCase()}
         quoteDenom={proposal.quoteDenom.includes('0x') ? 'USDT' : proposal.quoteDenom.toUpperCase()}
       />
+
+      {/* Bracket Non-Conditional Warning */}
+      {proposal.strategyType === 'bracket' && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+          <p className="text-xs font-medium text-amber-700 mb-1">
+            비조건부 주문 안내 (Non-Conditional Orders)
+          </p>
+          <p className="text-xs text-amber-600 leading-relaxed">
+            익절/손절 매도 주문은 진입 매수와 동시에 체결됩니다.
+            진입 주문이 체결되지 않아도 매도 주문은 활성 상태로 남습니다.
+            기존에 보유한 토큰이 있어야 매도 주문이 유효합니다.
+          </p>
+          <p className="text-xs text-amber-500 mt-1">
+            TP/SL sell orders are placed simultaneously with entry buy.
+            They remain active even if entry doesn&apos;t fill.
+            Ensure you hold enough base tokens for sells to be valid.
+          </p>
+        </div>
+      )}
 
       {/* Parameter Adjuster */}
       <ParameterAdjuster />
